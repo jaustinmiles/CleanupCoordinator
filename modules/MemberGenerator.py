@@ -23,7 +23,6 @@ def generate_members() -> list:
     max_row = len(col_one)
     members = []
     for i in range(1, max_row):
-        # time.sleep(0.5)
         member_row = all_values[i]
         name_first = member_row[0]
         name_last = member_row[1]
@@ -54,7 +53,6 @@ def generate_hours() -> dict:
     max_row = len(col_one)
     hours_dict = {}
     for i in range(1, max_row):
-        # time.sleep(0.5)
         member_row = all_values[i]
         hours_dict[member_row[0].strip() + member_row[1].strip()] = member_row[2]
     return hours_dict

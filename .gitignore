@@ -1,2 +1,5 @@
 client_secret.json
 requirements.txt
+.idea
+*.xml
+__pycache__
