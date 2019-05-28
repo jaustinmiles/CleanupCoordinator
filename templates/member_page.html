@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <br>
+    <div class="jumbotron" style="margin-right: 5%; margin-left: 5%">
+        <h1>Information for {{ member.first + ' ' + member.last}}:</h1>
+        <p>Phone number: {{ member.phone }}</p>
+        <p>Email: {{ member.email }}</p>
+        <p>Completed hours: {{ member.hours }}</p>
+    </div>
+{% endblock %}

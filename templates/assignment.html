@@ -1,0 +1,39 @@
+<!--
+Formats the assignments. If the hours list does not exist, a generate button is placed. Otherwise, the hours that have
+been generated are shown in the form of a list-group from Bootstrap. The name of each task is a hyperlink to its task
+page. Finally, there is a button at the bottom to assign tasks. 
+-->
+{% extends "base.html" %}
+
+{% block content %}
+    {% if not hours_list %}
+        <div class="container" align="center" style="margin-top: 5%">
+            <form method="post">
+                {{ generate.hidden_tag() }}
+                <div class="form-group">
+                    {{ generate.submit(class='btn btn-primary') }}
+                </div>
+            </form>
+        </div>
+    {% endif %}
+    {% if hours_list %}
+        <ul class="list-group">
+            {% for task in hours_list %}
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                    <a style="color:black" href="{{ url_for('task_page',identifier=task.id)}}">
+                        {{ task.name }}
+                    </a>
+                </li>
+            {% endfor %}
+        </ul>
+    {% endif %}
+    <div class="container" align="center" style="margin-top: 5%">
+        <form method="post">
+            {{ assign.hidden_tag() }}
+            <div class="form-group">
+                {{ assign.submit(class='btn btn-primary') }}
+            </div>
+        </form>
+    </div>
+
+{% endblock %}

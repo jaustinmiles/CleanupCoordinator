@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <table class="table table-striped">
+        <thead>
+        <tr>
+            <th scope="col">#</th>
+            <th scope="col">Member</th>
+            <th scope="col">Task</th>
+            <th scope="col">Status</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for i in enumerated %}
+            <tr>
+                <th scope="row">{{ i + 1 }}</th>
+                <td>
+                    <a style="color:black" href="{{ url_for('member_page',identifier=members[i].id)}}">
+                        {{ members[i].first + ' ' + members[i].last }}
+                    </a>
+
+                </td>
+                <td>
+                    <a style="color:black" href="{{ url_for('task_page',identifier=tasks[i].id)}}">
+                        {{ tasks[i].name }}
+                    </a>
+                </td>
+                <td>
+                    <a style="color:black">{{ assignments[i].response }}</a>
+                </td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+{% endblock %}

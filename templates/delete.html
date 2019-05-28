@@ -1,0 +1,12 @@
+{%  extends "base.html" %}
+
+{% block content %}
+    <div class="jumbotron">
+        <h3>Clicking the following will remove all current data from the database. Please make sure the data is saved
+            in a google spreadsheet before continuing!</h3>
+        <form method="post">
+            <input class="btn btn-secondary" type="submit" name="delete_all" value="DELETE ALL DATA">
+        </form>
+    </div>
+
+{% endblock %}

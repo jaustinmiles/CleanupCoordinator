@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <br>
+    <div class="jumbotron" style="margin-right: 5%; margin-left: 5%">
+        <h1>Information for {{ task.name }}:</h1>
+        <p>Due Date: {{ task.day}}</p>
+        <p>Due Time: {{ task.due_time }}</p>
+        <p>Worth: {{ task.worth }}</p>
+        <a href="{{ task.link }}">Link to Drive instructions</a>
+    </div>
+{% endblock %}

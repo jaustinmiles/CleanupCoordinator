@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+
+    {% if not assignments %}
+        <div class="container" align="center" style="margin-top: 5%">
+            <form method="post">
+                {{ assign.hidden_tag() }}
+                <div class="form-group">
+                    {{ assign.submit(class='btn btn-primary') }}
+                </div>
+            </form>
+        </div>
+    {% endif %}
+
+
+    {% if assignments %}
+        <table class="table table-striped">
+            <thead>
+            <tr>
+                <th scope="col">#</th>
+                <th scope="col">Member</th>
+                <th scope="col">Task</th>
+                <th scope="col">Reassign</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for i in enumerated %}
+                <tr>
+                    <th scope="row">{{ i + 1 }}</th>
+                    <td>
+                        <a style="color:black" href="{{ url_for('member_page',identifier=assignments[i][0].id)}}">
+                            {{ assignments[i][0].first + ' ' + assignments[i][0].last }}
+                        </a>
+
+                    </td>
+                    <td>
+                        <a style="color:black" href="{{ url_for('task_page',identifier=assignments[i][1].id)}}">
+                            {{ assignments[i][1].name }}
+                        </a>
+                    </td>
+                    <td>
+                        <form method="post" action="{{ url_for('final_assignments') }}">
+                            <input class="btn btn-secondary" type="submit" name="remove_{{ assignments[i][0].id }}" value="Reassign">
+                        </form>
+                    </td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+
+        <form method="post" action="{{ url_for('final_assignments') }}">
+            <input class="btn btn-primary" type="submit" name="send_texts" value="Send Texts">
+        </form>
+
+    {% endif %}
+{% endblock %}

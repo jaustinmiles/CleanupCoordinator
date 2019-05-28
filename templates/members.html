@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+
+{% block content %}
+    {% if not member_list %}
+        <div class="container" align="center" style="margin-top: 5%">
+            <form method="post">
+                {{ generate.hidden_tag() }}
+                <div class="form-group">
+                    {{ generate.submit(class='btn btn-primary') }}
+                </div>
+            </form>
+        </div>
+    {% endif %}
+
+
+    {% if member_list %}
+        <ul class="list-group">
+            {% for member in member_list %}
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                    <a style="color:black" href="{{ url_for('member_page',identifier=member.id)}}">
+                        {{ member.first + ' ' + member.last}}
+                    </a>
+                    <span class="badge badge-primary badge-pill">{{ member.hours }}</span>
+                </li>
+            {% endfor %}
+        </ul>
+    {% endif %}
+{% endblock %}
