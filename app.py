@@ -1,10 +1,12 @@
 import os
-from flask import Flask, render_template, redirect, url_for, request
+from flask import Flask, render_template, redirect, url_for, request, flash
+from flask_login import UserMixin, LoginManager, login_required, login_user, logout_user
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 from twilio.twiml.messaging_response import MessagingResponse
+from werkzeug.security import generate_password_hash, check_password_hash
 
-from utils.components import GenerateMembersButton, GenerateScheduleButton, AssignTasksButton
+from utils.components import GenerateMembersButton, GenerateScheduleButton, AssignTasksButton, LoginForm
 
 # Initial setup for the Flask app and migration capabilities of the database, along with the instantiation
 # of the global variable db
@@ -18,6 +20,9 @@ app.config['SECRET_KEY'] = 'mysecretkey'
 db = SQLAlchemy(app)
 Migrate(app, db)
 
+login_manager = LoginManager()
+login_manager.init_app(app)
+login_manager.login_view = 'login'
 
 # Models
 
@@ -148,6 +153,27 @@ class Assignment(db.Model):
         self.response = response
 
 
+@login_manager.user_loader
+def load_user(user_id):
+    return User.query.get(user_id)
+
+
+class User(db.Model, UserMixin):
+
+    id = db.Column(db.Integer, primary_key=True)
+    email = db.Column(db.String(64), unique=True, index=True)
+    username = db.Column(db.String(64), unique=True, index=True)
+    password_hash = db.Column(db.String(128))
+
+    def __init__(self, email, username, password):
+        self.email = email
+        self.username = username
+        self.password_hash = generate_password_hash(password)
+
+    def check_password(self, password):
+        return check_password_hash(self.password_hash, password)
+
+
 @app.route('/', methods=['GET', 'POST'])
 def index():
     """
@@ -159,6 +185,7 @@ def index():
 
 
 @app.route('/members', methods=['GET', 'POST'])
+@login_required
 def members():
     """
     page that contains all the members' data. Initially, it is blank. If the generate members button is
@@ -187,6 +214,7 @@ def members():
 
 
 @app.route('/member/<identifier>')
+@login_required
 def member_page(identifier):
     """
     page for a single member. Identifier corresponds to the unique database id, used to retrieve the member. Once
@@ -199,6 +227,7 @@ def member_page(identifier):
 
 
 @app.route('/task/<identifier>')
+@login_required
 def task_page(identifier):
     """
     similar to member_page, task_page is the page for a single task, containing all of its information.
@@ -210,6 +239,7 @@ def task_page(identifier):
 
 
 @app.route('/assignment', methods=['GET', 'POST'])
+@login_required
 def assignment():
     """
     Assignment represents the page for the user to generate the tasks from the google sheet, along with the button
@@ -241,6 +271,7 @@ def assignment():
 
 
 @app.route('/final_assignments', methods=['GET', 'POST'])
+@login_required
 def final_assignments():
     """
     final assignments utilizes the Assigner object from modules.TaskAssigner to properly assign tasks according to
@@ -318,6 +349,7 @@ def final_assignments():
 
 
 @app.route('/text_report', methods=['GET', 'POST'])
+@login_required
 def text_report():
     """
     The text_report tries to retrieve assignments from the database for use with the TextClient module. For each
@@ -339,6 +371,7 @@ def text_report():
 
 
 @app.route('/assignment_status', methods=['GET', 'POST'])
+@login_required
 def assignment_status():
     """
     The assignment status page is responsible for reporting the results of the member-cleanup hour assignments. The
@@ -403,6 +436,7 @@ def reply():
 
 
 @app.route('/delete', methods=['GET', 'POST'])
+@login_required
 def delete():
     """
     Easy button click function to clear the entire database at the beginning of each week. When this happens, all
@@ -426,6 +460,32 @@ def delete():
                 db.session.commit()
                 return redirect(url_for('index'))
     return render_template('delete.html')
+
+
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    form = LoginForm()
+    if form.validate_on_submit():
+        user = User.query.filter_by(email=form.email.data).first()
+        if user is not None and user.check_password(form.password.data):
+            login_user(user)
+            flash(f"Welcome, {user.username}")
+
+            next_request = request.args.get('next')
+
+            if next_request is None or next_request[0] != '/':
+                next_request = url_for('index')
+
+            return redirect(next_request)
+    return render_template('login.html', form=form)
+
+
+@app.route('/logout')
+@login_required
+def logout():
+    logout_user()
+    flash("You have successfully logged out!")
+    return redirect(url_for('index'))
 
 
 if __name__ == '__main__':

@@ -11,20 +11,32 @@
 <body>
 <nav class="navbar navbar-light bg-light">
     <a class="navbar-brand" href="{{ url_for('index')}}">Home</a>
-    <ul class="nav nav-tabs">
+    {% if current_user.is_authenticated %}
+        <ul class="nav nav-tabs">
+            <li class="nav-item">
+                <a class="nav-link" href="{{ url_for('members')}}">Members<span class="sr-only">(current)</span></a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="{{ url_for('assignment')}}">Assign Hours<span class="sr-only">(current)</span></a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="{{ url_for('assignment_status')}}">Assignment Status<span class="sr-only">(current)</span></a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="{{ url_for('delete')}}">Clean Database<span class="sr-only">(current)</span></a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="{{ url_for('logout') }}">Log out<span class="sr-only">(current)</span></a>
+            </li>
+        </ul>
+    {% else %}
+        <ul class="nav nav-tabs">
         <li class="nav-item">
-            <a class="nav-link" href="{{ url_for('members')}}">Members<span class="sr-only">(current)</span></a>
+            <a class="nav-link" href="{{ url_for('login') }}">Log In<span class="sr-only">(current)</span></a>
         </li>
-        <li class="nav-item">
-            <a class="nav-link" href="{{ url_for('assignment')}}">Assign Hours<span class="sr-only">(current)</span></a>
-        </li>
-        <li class="nav-item">
-            <a class="nav-link" href="{{ url_for('assignment_status')}}">Assignment Status<span class="sr-only">(current)</span></a>
-        </li>
-        <li class="nav-item">
-            <a class="nav-link" href="{{ url_for('delete')}}">Clean Database<span class="sr-only">(current)</span></a>
-        </li>
-    </ul>
+        </ul>
+    {% endif %}
+
 </nav>
 {% block content %}
 
