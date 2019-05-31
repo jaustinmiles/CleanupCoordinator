@@ -1,5 +1,6 @@
 from flask_wtf import FlaskForm
-from wtforms import SubmitField
+from wtforms import SubmitField, StringField, PasswordField
+from wtforms.validators import DataRequired, Email
 
 
 class GenerateMembersButton(FlaskForm):
@@ -12,3 +13,9 @@ class GenerateScheduleButton(FlaskForm):
 
 class AssignTasksButton(FlaskForm):
     submit = SubmitField('Assign Tasks')
+
+
+class LoginForm(FlaskForm):
+    email = StringField('Email', validators=[DataRequired(), Email()])
+    password = PasswordField('Password', validators=[DataRequired()])
+    submit = SubmitField('Log in')
