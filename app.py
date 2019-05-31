@@ -25,6 +25,7 @@ login_manager.init_app(app)
 login_manager.login_view = 'login'
 
 # Models
+# TODO: Provide all documentation for login additions
 
 
 class Member(db.Model):
@@ -166,11 +167,24 @@ class User(db.Model, UserMixin):
     password_hash = db.Column(db.String(128))
 
     def __init__(self, email, username, password):
+        """
+        Users are approved individuals (usually managers) that have access to pages containing
+        assignment options. Users cannot be added from within the app and must be added to the
+        db manually by local programming
+        :param email: email of the user
+        :param username: username of the user
+        :param password: password of the user
+        """
         self.email = email
         self.username = username
         self.password_hash = generate_password_hash(password)
 
-    def check_password(self, password):
+    def check_password(self, password: str) -> bool:
+        """
+        Wrapper method for checking a provided password against the stored hash
+        :param password: non-hashed attempted password
+        :return: whether the password was correct or not
+        """
         return check_password_hash(self.password_hash, password)
 
 
@@ -464,6 +478,12 @@ def delete():
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
+    """
+    Login capabilities are included here. The login form is used to query information
+    about a user, the the user's check_password method verifies the hash. The User
+    is then redirected to index or to whatever his original request was
+    :return:  template for index or next request
+    """
     form = LoginForm()
     if form.validate_on_submit():
         user = User.query.filter_by(email=form.email.data).first()
@@ -483,6 +503,11 @@ def login():
 @app.route('/logout')
 @login_required
 def logout():
+    """
+    Logout capabilities. Leverages flask-login to easily logout the user and redirect
+    to index
+    :return: url redirect for index.html
+    """
     logout_user()
     flash("You have successfully logged out!")
     return redirect(url_for('index'))
