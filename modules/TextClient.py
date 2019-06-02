@@ -19,7 +19,7 @@ class TextAssigner:
         self.client = client
         self.phone = "+14702020929"
 
-    def send_assignment(self, task_assignment: tuple) -> None:
+    def send_assignment(self, task_assignment: tuple, assignment_id) -> None:
         """
         Takes in a task_assignment tuple, usually received by the Assigner from TaskAssigner.
         Given this task, send_assignment will open the template text message file and append the
@@ -34,6 +34,7 @@ class TextAssigner:
         file = open('static/text_template.txt')
         line = file.readline()
         text = line + '\n\n' + str(task)
+        text = text + '\n\n Your submit token is ' + str(assignment_id)
         file.close()
         self.client.messages.create(
             to=phone_fixed,

@@ -1,12 +1,14 @@
 import os
-from flask import Flask, render_template, redirect, url_for, request, flash
+from PIL import Image
+
+from flask import Flask, render_template, redirect, url_for, request, flash, current_app
 from flask_login import UserMixin, LoginManager, login_required, login_user, logout_user
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 from twilio.twiml.messaging_response import MessagingResponse
 from werkzeug.security import generate_password_hash, check_password_hash
 
-from utils.components import GenerateMembersButton, GenerateScheduleButton, AssignTasksButton, LoginForm
+from utils.components import GenerateMembersButton, GenerateScheduleButton, AssignTasksButton, LoginForm, SubmitHourForm
 
 # Initial setup for the Flask app and migration capabilities of the database, along with the instantiation
 # of the global variable db
@@ -16,6 +18,7 @@ app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + os.path.join(basedir, 'data.sqlite')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['SECRET_KEY'] = 'mysecretkey'
+
 
 db = SQLAlchemy(app)
 Migrate(app, db)
@@ -188,14 +191,32 @@ class User(db.Model, UserMixin):
         return check_password_hash(self.password_hash, password)
 
 
+# Begin App
+
+
 @app.route('/', methods=['GET', 'POST'])
 def index():
     """
     The home page for the CleanupCoordinator. Includes a simple jumbotron for a welcome screen, along with
-    links to the other pages, by extension from base.html
+    links to the other pages, by extension from base.html. This page also hosts the form for submitting an hour if
+    the user is a Member
     :return: html template to render
     """
-    return render_template('index.html')
+    form = SubmitHourForm()
+    if form.validate_on_submit():
+        assignment_id = form.token.data
+        assign = Assignment.query.get(assignment_id)
+        member = Member.query.get(assign.member_id)
+        uploaded_files = request.files.getlist("file[]")
+        dir_path = os.path.join(current_app.root_path, f'static\\uploaded_hours\\{member.first + member.last}')
+        if not os.path.exists(dir_path):
+            os.makedirs(dir_path)
+        for file in uploaded_files:
+            filepath = os.path.join(dir_path, file.filename)
+            pic = Image.open(file)
+            pic.save(filepath)
+
+    return render_template('index.html', form=form)
 
 
 @app.route('/members', methods=['GET', 'POST'])
@@ -377,7 +398,7 @@ def text_report():
         assignments = Assignment.query.all()
         for assign in assignments:
             pair = (Member.query.get(assign.member_id), CleanupHour.query.get(assign.task_id))
-            text_assigner.send_assignment(pair)
+            text_assigner.send_assignment(pair, assign.id)
     except Exception as e:
         print(e)
         print('There was an error with sending the text to the member')
