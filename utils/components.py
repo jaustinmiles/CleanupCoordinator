@@ -1,5 +1,6 @@
 from flask_wtf import FlaskForm
-from wtforms import SubmitField, StringField, PasswordField
+from flask_wtf.file import FileAllowed, FileRequired
+from wtforms import SubmitField, StringField, PasswordField, IntegerField, FileField
 from wtforms.validators import DataRequired, Email
 
 
@@ -19,3 +20,9 @@ class LoginForm(FlaskForm):
     email = StringField('Email', validators=[DataRequired(), Email()])
     password = PasswordField('Password', validators=[DataRequired()])
     submit = SubmitField('Log in')
+
+
+class SubmitHourForm(FlaskForm):
+    token = IntegerField("What is your assignment token?", validators=[DataRequired()])
+    # pictures = FileField("Please submit your pictures here", validators=[FileAllowed(['jpg', 'png']), FileRequired()])
+    submit = SubmitField('Submit')

@@ -28,7 +28,7 @@ def reassign(phone, phone_no_1):
     pair = Assignment(member.id, task.id, phone_fixed)
     db.session.add(pair)
     db.session.commit()
-    text_client.send_assignment((member, task))
+    text_client.send_assignment((member, task), pair.id)
 
 
 def get_member_object():
