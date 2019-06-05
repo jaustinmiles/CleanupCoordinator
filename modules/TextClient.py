@@ -2,7 +2,6 @@ from twilio.rest import Client
 from modules import CleanupHourScheduler
 from modules import MemberGenerator
 from modules import TaskAssigner
-# import TaskLogger
 
 
 class TextAssigner:
@@ -13,8 +12,8 @@ class TextAssigner:
         Client that has the capability of creating and sending messages, and it has the phone
         number of the text service (the number texts will be sent from).
         """
-        account_sid = 'AC944ae6731f1c663dd528cf795f0ed28c'
-        token = '6507510c2d1274b1bd31db9b91dc67f5'
+        token = open('modules/twilio_token.txt').readline().strip()
+        account_sid = open('modules/twilio_account.txt').readline().strip()
         client = Client(account_sid, token)
         self.client = client
         self.phone = "+14702020929"
@@ -57,5 +56,5 @@ if __name__ == '__main__':
     assigner = TaskAssigner.Assigner(members, tasks)
     task_tup = assigner.assign_task()
     text_assigner = initialize_text_assigner()
-    text_assigner.send_assignment((task_tup[0], task_tup[1]))
+    text_assigner.send_assignment((task_tup[0], task_tup[1]), 1)
     # TaskLogger.log_task((task_tup[1], task_tup[0]))

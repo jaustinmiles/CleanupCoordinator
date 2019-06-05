@@ -4,3 +4,5 @@ requirements.txt
 *.xml
 __pycache__
 add_housing_access.py
+modules/twilio_account.txt
+modules/twilio_token.txt
