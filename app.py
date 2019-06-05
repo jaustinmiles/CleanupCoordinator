@@ -8,8 +8,6 @@ from flask_migrate import Migrate
 from twilio.twiml.messaging_response import MessagingResponse
 from werkzeug.security import generate_password_hash, check_password_hash
 
-from utils.components import GenerateMembersButton, GenerateScheduleButton, AssignTasksButton, LoginForm, SubmitHourForm
-
 # Initial setup for the Flask app and migration capabilities of the database, along with the instantiation
 # of the global variable db
 basedir = os.path.abspath(os.path.dirname(__file__))
@@ -202,10 +200,17 @@ def index():
     the user is a Member
     :return: html template to render
     """
+    from utils.components import SubmitHourForm
     form = SubmitHourForm()
     if form.validate_on_submit():
         assignment_id = form.token.data
+        submitted_name = int(form.name.data)
+        submitted_hour = int(form.hour.data)
         assign = Assignment.query.get(assignment_id)
+        if assign is None or assign.member_id != submitted_name or assign.task_id != submitted_hour:
+            flash("Some information you provided does not match up with information in the database. Please try again "
+                  "or contact the housing manager.")
+            return render_template('index.html', form=form)
         member = Member.query.get(assign.member_id)
         uploaded_files = request.files.getlist("file[]")
         dir_path = os.path.join(current_app.root_path, f'static\\uploaded_hours\\{member.first + member.last}')
@@ -215,6 +220,7 @@ def index():
             filepath = os.path.join(dir_path, file.filename)
             pic = Image.open(file)
             pic.save(filepath)
+        flash("Your submission was successful. Thank you for completing your task!")
 
     return render_template('index.html', form=form)
 
@@ -231,6 +237,7 @@ def members():
     an anchor tag for his specific member page, which displays complete information.
     :return: template for members.html
     """
+    from utils.components import GenerateMembersButton
     generate = GenerateMembersButton()
     if generate.validate_on_submit():
         from modules.MemberGenerator import generate_members
@@ -284,6 +291,7 @@ def assignment():
     the database until reset.
     :return: template for assignment (the current page), or final_assignments (upon pressing the assign button)
     """
+    from utils.components import GenerateScheduleButton, AssignTasksButton
     generate = GenerateScheduleButton()
     try:
         hours_list = CleanupHour.query.all()
@@ -505,6 +513,7 @@ def login():
     is then redirected to index or to whatever his original request was
     :return:  template for index or next request
     """
+    from utils.components import LoginForm
     form = LoginForm()
     if form.validate_on_submit():
         user = User.query.filter_by(email=form.email.data).first()
