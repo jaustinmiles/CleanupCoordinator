@@ -1,4 +1,4 @@
-client_secret.json
+modules/client_secret.json
 requirements.txt
 .idea
 *.xml
