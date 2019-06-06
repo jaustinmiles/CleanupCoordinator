@@ -1,5 +1,5 @@
 from flask_wtf import FlaskForm
-from wtforms import SubmitField, StringField, PasswordField, IntegerField, SelectField
+from wtforms import SubmitField, StringField, PasswordField, SelectField
 from wtforms.validators import DataRequired, Email
 
 
@@ -44,4 +44,5 @@ class SubmitHourForm(FlaskForm):
     hour = SelectField("What hour did you do?", choices=get_task_choices())
     token = StringField("What is your assignment token?", validators=[DataRequired()])
     submit = SubmitField('Submit')
+
 
