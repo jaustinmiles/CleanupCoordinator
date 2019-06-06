@@ -13,29 +13,4 @@
     <div class="jumbotron" style="margin-right: 5%; margin-left: 5%">
         <h1 align="center">Welcome to the Cleanup Coordinator!</h1>
     </div>
-    {% if not current_user.is_authenticated %}
-        <div class="container">
-            <h2>Submit a cleanup hour below:</h2>
-            <form action="" method="POST" enctype="multipart/form-data">
-                {{ form.hidden_tag() }}
-                <div class="form-group">
-                    {{ form.name.label }}
-                    {{ form.name(class="form-control") }}
-                </div>
-                <div class="form-group">
-                    {{ form.hour.label }}
-                    {{ form.hour(class="form-control") }}
-                </div>
-                <div class="form-group">
-                    {{ form.token.label }}
-                    {{ form.token(class="form-control") }}
-                </div>
-                <div class="form-group">
-                    <label for="file[]">Please drop your pictures here:</label>
-                    <input class="form-control" type="file" name="file[]" multiple="">
-                </div>
-                {{ form.submit(class="btn btn-primary") }}
-            </form>
-        </div>
-    {% endif %}
 {% endblock %}

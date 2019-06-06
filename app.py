@@ -1,4 +1,6 @@
 import os
+from os.path import isfile, join, isdir
+
 from PIL import Image
 
 from flask import Flask, render_template, redirect, url_for, request, flash, current_app
@@ -189,6 +191,19 @@ class User(db.Model, UserMixin):
         return check_password_hash(self.password_hash, password)
 
 
+class Submission(db.Model):
+
+    id = db.Column(db.Integer, primary_key=True)
+    dir_name = db.Column(db.String, index=True, unique=True)
+    reviewed = db.Column(db.Boolean)
+    assignment_id = db.Column(db.Integer, unique=True, index=True)
+
+    def __init__(self, dir_name, assignment_id, reviewed=False):
+        self.dir_name = dir_name
+        self.assignment_id = assignment_id
+        self.reviewed = reviewed
+
+
 # Begin App
 
 
@@ -200,6 +215,11 @@ def index():
     the user is a Member
     :return: html template to render
     """
+    return render_template('index.html')
+
+
+@app.route('/submit', methods=['GET', 'POST'])
+def submit():
     from utils.components import SubmitHourForm
     form = SubmitHourForm()
     if form.validate_on_submit():
@@ -210,7 +230,7 @@ def index():
         if assign is None or assign.member_id != submitted_name or assign.task_id != submitted_hour:
             flash("Some information you provided does not match up with information in the database. Please try again "
                   "or contact the housing manager.")
-            return render_template('index.html', form=form)
+            return render_template('index.html')
         member = Member.query.get(assign.member_id)
         uploaded_files = request.files.getlist("file[]")
         dir_path = os.path.join(current_app.root_path, f'static\\uploaded_hours\\{member.first + member.last}')
@@ -219,10 +239,21 @@ def index():
         for file in uploaded_files:
             filepath = os.path.join(dir_path, file.filename)
             pic = Image.open(file)
+            pic = pic.resize((1000, 1000))
             pic.save(filepath)
+        mypath = join(os.path.abspath(os.path.dirname(__file__)), 'static\\uploaded_hours')
+        uploads = [f for f in os.listdir(mypath) if isdir(join(mypath, f))]
+        for upload in uploads:
+            if Submission.query.filter_by(dir_name=upload).first() is None:
+                sub = Submission(upload, assignment_id)
+                db.session.add(sub)
+                db.session.commit()
         flash("Your submission was successful. Thank you for completing your task!")
-
-    return render_template('index.html', form=form)
+        assign.response = 'Submitted'
+        db.session.add(assign)
+        db.session.commit()
+        return render_template('index.html')
+    return render_template('submit.html', form=form)
 
 
 @app.route('/members', methods=['GET', 'POST'])
@@ -500,6 +531,9 @@ def delete():
                 assignments = Assignment.query.all()
                 for assign in assignments:
                     db.session.delete(assign)
+                subs = Submission.query.all()
+                for sub in subs:
+                    db.session.delete(sub)
                 db.session.commit()
                 return redirect(url_for('index'))
     return render_template('delete.html')
@@ -541,6 +575,48 @@ def logout():
     logout_user()
     flash("You have successfully logged out!")
     return redirect(url_for('index'))
+
+
+@app.route('/review-main', methods=['GET', 'POST'])
+@login_required
+def review_main():
+    subs = Submission.query.all()
+    if not subs:
+        return redirect(url_for('index'))
+    if request.method == 'POST':
+        button_ids = request.values.keys()
+        for button_id in button_ids:
+            if 'approve' in button_id or 'deny' in button_id:
+                sub = Submission.query.get(int(button_id[7:]))
+                assign = Assignment.query.get(sub.assignment_id)
+                assign.response = 'Reviewed'
+                sub.reviewed = True
+                db.session.add(sub)
+                db.session.add(assign)
+                if 'approve' in button_id:
+                    member = Member.query.get(assign.member_id)
+                    member.hours += 1
+                    db.session.add(member)
+                db.session.commit()
+                return render_template('review_main.html', subs=subs)
+    return render_template('review_main.html', subs=subs)
+
+
+@app.route('/review/<identifier>', methods=['GET', 'POST'])
+@login_required
+def review(identifier):
+
+    sub = Submission.query.get(identifier)
+    # subs = [sub for sub in subs if not sub.reviewed]
+    if not sub:
+        return redirect(url_for('index'))
+    assignment = Assignment.query.get(sub.assignment_id)
+    member = Member.query.get(assignment.member_id)
+    task = CleanupHour.query.get(assignment.task_id)
+    mypath = join(os.path.abspath(os.path.dirname(__file__)), f'static\\uploaded_hours\\{sub.dir_name}')
+    uploads = [(sub.dir_name + '\\' + f) for f in os.listdir(mypath) if isfile(join(mypath, f))]
+    enumerated = range(len(uploads))
+    return render_template('review.html', uploads=uploads, member=member, task=task, enumerated=enumerated, sub=sub)
 
 
 if __name__ == '__main__':

@@ -28,11 +28,17 @@
             <li class="nav-item">
                 <a class="nav-link" href="{{ url_for('logout') }}">Log out<span class="sr-only">(current)</span></a>
             </li>
+            <li class="nav-item">
+                <a class="nav-link" href="{{ url_for('review_main') }}">Review Hours<span class="sr-only">(current)</span></a>
+            </li>
         </ul>
     {% else %}
         <ul class="nav nav-tabs">
         <li class="nav-item">
             <a class="nav-link" href="{{ url_for('login') }}">Log In<span class="sr-only">(current)</span></a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" href="{{ url_for('submit') }}">Submit an hour<span class="sr-only">(current)</span></a>
         </li>
         </ul>
     {% endif %}

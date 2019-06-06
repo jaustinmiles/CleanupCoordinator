@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block content %}
+    <ul class="list-group">
+        {% for sub in subs %}
+            <li class="list-group-item d-flex justify-content-between align-items-center">
+                <a style="color:black" href="{{ url_for('review',identifier=sub.id)}}">
+                    {{ sub.dir_name }}
+                </a>
+                {% if sub.reviewed %}
+                    <p>Reviewed</p>
+                {% else %}
+                    <p>Needs Review</p>
+                {% endif %}
+            </li>
+        {% endfor %}
+    </ul>
+{% endblock %}
