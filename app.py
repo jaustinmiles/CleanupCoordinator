@@ -199,6 +199,14 @@ class Submission(db.Model):
     assignment_id = db.Column(db.Integer, unique=True, index=True)
 
     def __init__(self, dir_name, assignment_id, reviewed=False):
+        """
+        The Submission model is used to link a submission to an assignment. Based on the assignment token,
+        the assignment can be queried and the Task and Member can be retrieved. It is important to have this
+        additional model because it contains the directory where the submission photos are stored
+        :param dir_name: directory of submission photos, under static/uploaded_hours
+        :param assignment_id: db id of assignment model
+        :param reviewed: whether the submission has been reviewed or not
+        """
         self.dir_name = dir_name
         self.assignment_id = assignment_id
         self.reviewed = reviewed
@@ -220,6 +228,15 @@ def index():
 
 @app.route('/submit', methods=['GET', 'POST'])
 def submit():
+    """
+    Page for a member to submit a cleanup task. This page does some simple checking to ensure that
+    the assignment token, cleanup task, and member name all match the information stored in the database.
+    If this requirement is not met, then the user will be redirected with a flash message. If everything checks
+    out, the pictures that are submitted will be resized to a set size and saved into a directory of the
+    Member's first + last name. If there is not already a Submission model for the User, one will be created
+    and committed to the db.
+    :return: template for the submit.html, with a SubmitHourForm passed in
+    """
     from utils.components import SubmitHourForm
     form = SubmitHourForm()
     if form.validate_on_submit():
@@ -580,6 +597,14 @@ def logout():
 @app.route('/review-main', methods=['GET', 'POST'])
 @login_required
 def review_main():
+    """
+    The main page for reviewing a cleanup task. If there are no Submissions, this page is not accessible.
+    Because the approve and deny buttons (from an individual review page) both redirect to this page, the
+    handling of them is included here. If the hour is approved, the member is modified to +1 hours. The submission
+    is always marked as reviewed if a button is pressed. These changes are committed to the database and the template
+    is rendered.
+    :return: template for review_main
+    """
     subs = Submission.query.all()
     if not subs:
         return redirect(url_for('index'))
@@ -605,16 +630,22 @@ def review_main():
 @app.route('/review/<identifier>', methods=['GET', 'POST'])
 @login_required
 def review(identifier):
-
+    """
+    Branch page from review_main: this page serves the manager by showing pictures of the task for the
+    Submission. The manager will then approve or deny the assignment. The submission provides access to the
+    Assignment, and thus the Member and the CleanupHour. It also provides the directory name, which is used
+    to generate the files inside the directory. Note, the files should all be images (handled on submission).
+    :param identifier: id for the Submission in the db
+    :return: template for the review
+    """
     sub = Submission.query.get(identifier)
-    # subs = [sub for sub in subs if not sub.reviewed]
     if not sub:
         return redirect(url_for('index'))
-    assignment = Assignment.query.get(sub.assignment_id)
-    member = Member.query.get(assignment.member_id)
-    task = CleanupHour.query.get(assignment.task_id)
-    mypath = join(os.path.abspath(os.path.dirname(__file__)), f'static\\uploaded_hours\\{sub.dir_name}')
-    uploads = [(sub.dir_name + '\\' + f) for f in os.listdir(mypath) if isfile(join(mypath, f))]
+    assign = Assignment.query.get(sub.assignment_id)
+    member = Member.query.get(assign.member_id)
+    task = CleanupHour.query.get(assign.task_id)
+    upload_path = join(os.path.abspath(os.path.dirname(__file__)), f'static\\uploaded_hours\\{sub.dir_name}')
+    uploads = [(sub.dir_name + '\\' + f) for f in os.listdir(upload_path) if isfile(join(upload_path, f))]
     enumerated = range(len(uploads))
     return render_template('review.html', uploads=uploads, member=member, task=task, enumerated=enumerated, sub=sub)
 
@@ -622,6 +653,11 @@ def review(identifier):
 @app.route('/publish', methods=['GET', 'POST'])
 @login_required
 def publish():
+    """
+    Simple page to publish results of the week to Google Drive. If the button is pressed,
+    the SpreadsheetUpdater will update the hours in the Running total page of the spreadsheet.
+    :return: template for publish.html, or a redirect to index (if button is pressed and successful)
+    """
     if request.method == 'POST':
         button_ids = request.values.keys()
         for button_id in button_ids:
