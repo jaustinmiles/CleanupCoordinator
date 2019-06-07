@@ -644,9 +644,15 @@ def review(identifier):
     assign = Assignment.query.get(sub.assignment_id)
     member = Member.query.get(assign.member_id)
     task = CleanupHour.query.get(assign.task_id)
-    upload_path = join(os.path.abspath(os.path.dirname(__file__)), f'static\\uploaded_hours\\{sub.dir_name}')
-    uploads = [(sub.dir_name + '\\' + f) for f in os.listdir(upload_path) if isfile(join(upload_path, f))]
-    enumerated = range(len(uploads))
+    try:
+        upload_path = join(os.path.abspath(os.path.dirname(__file__)), f'static\\uploaded_hours\\{sub.dir_name}')
+        uploads = [(sub.dir_name + '\\' + f) for f in os.listdir(upload_path) if isfile(join(upload_path, f))]
+        enumerated = range(len(uploads))
+    except Exception as e:
+        print(e)
+        flash('There was an error retrieving the submission photos for the individual you are attempting to review. '
+              'Ask the Member to resubmit these photos or examine the folder manually.')
+        return redirect(url_for('index'))
     return render_template('review.html', uploads=uploads, member=member, task=task, enumerated=enumerated, sub=sub)
 
 
