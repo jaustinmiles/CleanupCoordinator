@@ -619,5 +619,18 @@ def review(identifier):
     return render_template('review.html', uploads=uploads, member=member, task=task, enumerated=enumerated, sub=sub)
 
 
+@app.route('/publish', methods=['GET', 'POST'])
+@login_required
+def publish():
+    if request.method == 'POST':
+        button_ids = request.values.keys()
+        for button_id in button_ids:
+            if 'publish' in button_id:
+                from modules.SpreadsheetUpdater import update_hours
+                update_hours()
+                return redirect(url_for('index'))
+    return render_template('publish.html')
+
+
 if __name__ == '__main__':
     app.run(debug=True)

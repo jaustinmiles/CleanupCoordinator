@@ -1,7 +1,6 @@
 import gspread
 from oauth2client.service_account import ServiceAccountCredentials
-from app import Member
-from app import document_name
+from app import Member, document_name
 
 
 def generate_members() -> list:
