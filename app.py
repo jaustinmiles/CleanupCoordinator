@@ -255,7 +255,7 @@ def submit():
             return render_template('index.html')
         member = Member.query.get(assign.member_id)
         uploaded_files = request.files.getlist("file[]")
-        dir_path = os.path.join(current_app.root_path, f'static\\uploaded_hours\\{member.first + member.last}')
+        dir_path = os.path.join(current_app.root_path, f'static/uploaded_hours/{member.first + member.last}')
         if not os.path.exists(dir_path):
             os.makedirs(dir_path)
         for file in uploaded_files:
@@ -263,7 +263,7 @@ def submit():
             pic = Image.open(file)
             pic = pic.resize((1000, 1000))
             pic.save(filepath)
-        mypath = join(os.path.abspath(os.path.dirname(__file__)), 'static\\uploaded_hours')
+        mypath = join(os.path.abspath(os.path.dirname(__file__)), 'static/uploaded_hours')
         uploads = [f for f in os.listdir(mypath) if isdir(join(mypath, f))]
         for upload in uploads:
             if Submission.query.filter_by(dir_name=upload).first() is None:
