@@ -1,4 +1,4 @@
-PIL
+Pillow
 twilio
 gspread
 google-api-python-client
