@@ -1,6 +1,7 @@
 Pillow
 twilio
 gspread
+gunicorn
 google-api-python-client
 alembic==0.9.9
 blinker==1.4
