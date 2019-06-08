@@ -45,7 +45,7 @@ def get_task_choices():
 
 
 class SubmitHourForm(FlaskForm):
-    name = SelectField("What is your name?", choices=get_member_choices())
-    hour = SelectField("What hour did you do?", choices=get_task_choices())
+    name = SelectField("What is your name?")
+    hour = SelectField("What hour did you do?")
     token = StringField("What is your assignment token?", validators=[DataRequired()])
     submit = SubmitField('Submit')

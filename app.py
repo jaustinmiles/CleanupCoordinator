@@ -237,8 +237,13 @@ def submit():
     and committed to the db.
     :return: template for the submit.html, with a SubmitHourForm passed in
     """
-    from utils.components import SubmitHourForm
+    if not Assignment.query.all():
+        flash("Sorry, there are no open assignments at the moment, and no submissions are being taken.")
+        return redirect(url_for('index'))
+    from utils.components import SubmitHourForm, get_task_choices, get_member_choices
     form = SubmitHourForm()
+    form.name.choices = get_member_choices()
+    form.hour.choices = get_task_choices()
     if form.validate_on_submit():
         assignment_id = form.token.data
         submitted_name = int(form.name.data)
@@ -394,13 +399,8 @@ def final_assignments():
                 db.session.add(member)
                 db.session.commit()
     # try to query lists, set to empty if exception
-    try:
-        member_list = Member.query.all()
-        hours_list = CleanupHour.query.all()
-    except Exception as e:
-        print(e)
-        member_list = []
-        hours_list = []
+    member_list = Member.query.all()
+    hours_list = CleanupHour.query.all()
     assignments = []
     # try to create assignments, otherwise, set assignments to empty so that pressing the send_texts button is safe
     if member_list and hours_list:
@@ -418,6 +418,10 @@ def final_assignments():
         if not successful_assignment:
             hours_list = []
             assignments = []
+    if not assignments:
+        flash("One of the lists passed in produced an error. Please ensure the lists are valid before trying to assign"
+              " tasks.")
+        return redirect(url_for('index'))
     if request.method == 'POST':
         button_ids = request.values.keys()
         for button_id in button_ids:
@@ -532,7 +536,7 @@ def delete():
     """
     Easy button click function to clear the entire database at the beginning of each week. When this happens, all
     data stored in Members, Assignments, and CleanupHours will be erased, but no information stored in the excel sheet
-    will be touched.
+    will be touched. This function will also clear all directories under static/uploaded_hours
     :return: template for delete.html
     """
     if request.method == 'POST':
@@ -552,7 +556,16 @@ def delete():
                 for sub in subs:
                     db.session.delete(sub)
                 db.session.commit()
+                path = os.path.join(current_app.root_path, "static\\uploaded_hours")
+                contents = os.listdir(path)
+                contents = [os.path.join(current_app.root_path, "static\\uploaded_hours", content)
+                            for content in contents]
+                dirs = [content for content in contents if isdir(content)]
+                from shutil import rmtree
+                for a_dir in dirs:
+                    rmtree(a_dir)
                 return redirect(url_for('index'))
+
     return render_template('delete.html')
 
 
@@ -607,6 +620,7 @@ def review_main():
     """
     subs = Submission.query.all()
     if not subs:
+        flash("There are currently no submissions to review. Try again later or examine files manually.")
         return redirect(url_for('index'))
     if request.method == 'POST':
         button_ids = request.values.keys()
@@ -640,6 +654,7 @@ def review(identifier):
     """
     sub = Submission.query.get(identifier)
     if not sub:
+        flash("There are currently no submissions to review. Try again later or examine files manually.")
         return redirect(url_for('index'))
     assign = Assignment.query.get(sub.assignment_id)
     member = Member.query.get(assign.member_id)
@@ -669,7 +684,13 @@ def publish():
         for button_id in button_ids:
             if 'publish' in button_id:
                 from modules.SpreadsheetUpdater import update_hours
-                update_hours()
+                try:
+                    update_hours()
+                    flash("Hours have been updated in Google Drive. It is now safe to reset the database for the week.")
+                except Exception as e:
+                    print(e)
+                    flash("URGENT: There was an error updating the hours. Please UPDATE MANUALLY BEFORE RESETTING THE "
+                          "database!!")
                 return redirect(url_for('index'))
     return render_template('publish.html')
 
