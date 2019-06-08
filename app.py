@@ -556,9 +556,9 @@ def delete():
                 for sub in subs:
                     db.session.delete(sub)
                 db.session.commit()
-                path = os.path.join(current_app.root_path, "static\\uploaded_hours")
+                path = os.path.join(current_app.root_path, "static/uploaded_hours")
                 contents = os.listdir(path)
-                contents = [os.path.join(current_app.root_path, "static\\uploaded_hours", content)
+                contents = [os.path.join(current_app.root_path, "static/uploaded_hours", content)
                             for content in contents]
                 dirs = [content for content in contents if isdir(content)]
                 from shutil import rmtree
@@ -660,7 +660,7 @@ def review(identifier):
     member = Member.query.get(assign.member_id)
     task = CleanupHour.query.get(assign.task_id)
     try:
-        upload_path = join(os.path.abspath(os.path.dirname(__file__)), f'static\\uploaded_hours\\{sub.dir_name}')
+        upload_path = join(os.path.abspath(os.path.dirname(__file__)), f'static/uploaded_hours/{sub.dir_name}')
         uploads = [(sub.dir_name + '\\' + f) for f in os.listdir(upload_path) if isfile(join(upload_path, f))]
         enumerated = range(len(uploads))
     except Exception as e:
