@@ -2,8 +2,8 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="3377c143-73d4-4660-99c7-89af4b0fc212" name="Default Changelist" comment="">
+      <change beforePath="$PROJECT_DIR$/.idea/vcs.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app.py" beforeDir="false" afterPath="$PROJECT_DIR$/app.py" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -65,11 +65,11 @@
   </component>
   <component name="FileEditorManager">
     <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
-      <file pinned="false" current-in-tab="true">
+      <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/app.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="-5019">
-              <caret line="257" column="79" selection-start-line="257" selection-start-column="79" selection-end-line="257" selection-end-column="79" />
+            <state relative-caret-position="388">
+              <caret line="675" column="14" selection-start-line="675" selection-start-column="14" selection-end-line="675" selection-end-column="14" />
               <folding>
                 <element signature="e#0#9#0" expanded="true" />
               </folding>
@@ -81,7 +81,7 @@
         <entry file="file://$PROJECT_DIR$/requirements.txt">
           <provider selected="true" editor-type-id="text-editor">
             <state relative-caret-position="272">
-              <caret line="28" column="22" lean-forward="true" selection-start-line="28" selection-start-column="22" selection-end-line="28" selection-end-column="22" />
+              <caret line="28" column="22" selection-start-line="28" selection-start-column="22" selection-end-line="28" selection-end-column="22" />
             </state>
           </provider>
         </entry>
@@ -90,12 +90,12 @@
         <entry file="file://$PROJECT_DIR$/Procfile">
           <provider selected="true" editor-type-id="text-editor">
             <state relative-caret-position="17">
-              <caret line="1" lean-forward="true" selection-start-line="1" selection-end-line="1" />
+              <caret line="1" selection-start-line="1" selection-end-line="1" />
             </state>
           </provider>
         </entry>
       </file>
-      <file pinned="false" current-in-tab="false">
+      <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/.gitignore">
           <provider selected="true" editor-type-id="text-editor" />
         </entry>
@@ -179,18 +179,6 @@
           </provider>
         </entry>
       </file>
-      <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/modules/SpreadsheetUpdater.py">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="425">
-              <caret line="25" column="30" selection-start-line="25" selection-start-column="30" selection-end-line="25" selection-end-column="30" />
-              <folding>
-                <element signature="e#0#14#0" expanded="true" />
-              </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
     </leaf>
   </component>
   <component name="FileTemplateManagerImpl">
@@ -249,8 +237,8 @@
     </option>
   </component>
   <component name="ProjectFrameBounds" extendedState="6">
-    <option name="x" value="792" />
-    <option name="y" value="-15" />
+    <option name="x" value="1197" />
+    <option name="y" value="-10" />
     <option name="width" value="775" />
     <option name="height" value="440" />
   </component>
@@ -490,12 +478,12 @@
       <workItem from="1559506248569" duration="5425000" />
       <workItem from="1559590751528" duration="6995000" />
       <workItem from="1559749146305" duration="15439000" />
-      <workItem from="1559927198586" duration="16131000" />
+      <workItem from="1559927198586" duration="17625000" />
     </task>
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="102722000" />
+    <option name="totallyTimeSpent" value="104216000" />
   </component>
   <component name="TodoView">
     <todo-panel id="selected-file">
@@ -508,6 +496,7 @@
   </component>
   <component name="ToolWindowManager">
     <frame x="-6" y="-6" width="1293" height="733" extended-state="6" />
+    <editor active="true" />
     <layout>
       <window_info content_ui="combo" id="Project" order="0" visible="true" weight="0.21295546" />
       <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
@@ -523,7 +512,7 @@
       <window_info anchor="bottom" id="Docker" order="8" show_stripe_button="false" />
       <window_info anchor="bottom" id="Version Control" order="9" weight="0.34890965" />
       <window_info anchor="bottom" id="Database Changes" order="10" show_stripe_button="false" />
-      <window_info active="true" anchor="bottom" id="Terminal" order="11" sideWeight="0.49520257" visible="true" weight="0.2769486" />
+      <window_info active="true" anchor="bottom" id="Terminal" order="11" sideWeight="0.49520257" visible="true" weight="0.44941956" />
       <window_info anchor="bottom" id="Event Log" order="12" sideWeight="0.50159913" side_tool="true" weight="0.35721704" />
       <window_info anchor="bottom" id="Python Console" order="13" sideWeight="0.4989035" weight="0.32917964" />
       <window_info anchor="bottom" id="Concurrent Activities Diagram" order="14" weight="0.32917964" />
@@ -609,7 +598,6 @@
     </expressions>
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://$PROJECT_DIR$/static/uploaded_hours/JohnMiles/20190601_183536.jpg" />
     <entry file="das://2f7a53d7-beb4-42f1-a651-a9ded460ee53/schema/main/table/user">
       <provider selected="true" editor-type-id="com.intellij.database.editor.DatabaseTableFileEditorProvider">
         <state>
@@ -925,29 +913,36 @@
     <entry file="file://$PROJECT_DIR$/Procfile">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="17">
-          <caret line="1" lean-forward="true" selection-start-line="1" selection-end-line="1" />
+          <caret line="1" selection-start-line="1" selection-end-line="1" />
         </state>
       </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/.gitignore">
-      <provider selected="true" editor-type-id="text-editor" />
     </entry>
     <entry file="file://$PROJECT_DIR$/requirements.txt">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="272">
-          <caret line="28" column="22" lean-forward="true" selection-start-line="28" selection-start-column="22" selection-end-line="28" selection-end-column="22" />
+          <caret line="28" column="22" selection-start-line="28" selection-start-column="22" selection-end-line="28" selection-end-column="22" />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/app.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-5019">
-          <caret line="257" column="79" selection-start-line="257" selection-start-column="79" selection-end-line="257" selection-end-column="79" />
+        <state relative-caret-position="388">
+          <caret line="675" column="14" selection-start-line="675" selection-start-column="14" selection-end-line="675" selection-end-column="14" />
           <folding>
             <element signature="e#0#9#0" expanded="true" />
           </folding>
         </state>
       </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/CleanupCoordinator/.gitignore">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="119">
+          <caret line="7" column="26" lean-forward="true" selection-start-line="7" selection-start-column="26" selection-end-line="7" selection-end-column="26" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/.gitignore">
+      <provider selected="true" editor-type-id="text-editor" />
     </entry>
   </component>
   <component name="masterDetails">
