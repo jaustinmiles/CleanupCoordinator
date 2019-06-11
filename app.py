@@ -697,7 +697,11 @@ def publish():
 
 
 db.create_all()
-
+if not User.query.filter_by(email='house.gtdeltachi@gmail.com'):
+    user = User('house.gtdeltachi@gmail.com', 'housing_manager_main', 'dummy')
+    user.password_hash = 'pbkdf2:sha256:50000$W3NRYkpm$492b17b4018a468ae742877ba7bfb2e3d8a5571cbbeeee020d430d40221179c0'
+    db.session.add(user)
+    db.session.commit()
 
 if __name__ == '__main__':
     app.run(debug=True)
