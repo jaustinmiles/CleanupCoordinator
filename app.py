@@ -558,6 +558,8 @@ def delete():
                     db.session.delete(task)
                 db.session.commit()
                 path = os.path.join(current_app.root_path, "static/uploaded_hours")
+                if not os.path.exists(path):
+                    os.mkdir(path)
                 contents = os.listdir(path)
                 contents = [os.path.join(current_app.root_path, "static/uploaded_hours", content)
                             for content in contents]
