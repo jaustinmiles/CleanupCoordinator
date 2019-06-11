@@ -696,5 +696,8 @@ def publish():
     return render_template('publish.html')
 
 
+db.create_all()
+
+
 if __name__ == '__main__':
     app.run(debug=True)
