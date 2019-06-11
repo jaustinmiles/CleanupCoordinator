@@ -8,11 +8,13 @@
         {% endfor %}
     </div>
     <br>
-    <form method="post" action="{{ url_for('review_main') }}">
-        <input class="btn btn-secondary" type="submit" name="approve{{ sub.id }}" value="Approve">
-    </form>
-    <br>
-    <form method="post" action="{{ url_for('review_main') }}">
-        <input class="btn btn-secondary" type="submit" name="deny___{{ sub.id }}" value="Deny">
-    </form>
+    <div class="container" align="center">
+        <form method="post" action="{{ url_for('review_main') }}">
+            <input class="btn btn-secondary" type="submit" name="approve{{ sub.id }}" value="Approve">
+        </form>
+        <br>
+        <form method="post" action="{{ url_for('review_main') }}">
+            <input class="btn btn-secondary" type="submit" name="deny___{{ sub.id }}" value="Deny">
+        </form>
+    </div>
 {% endblock %}
