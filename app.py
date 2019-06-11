@@ -545,17 +545,17 @@ def delete():
         for button_id in button_ids:
             if 'delete_all' in button_id:
                 members_list = Member.query.all()
+                subs = Submission.query.all()
+                for sub in subs:
+                    db.session.delete(sub)
+                assignments = Assignment.query.all()
+                for assign in assignments:
+                    db.session.delete(assign)
                 for member in members_list:
                     db.session.delete(member)
                 tasks = CleanupHour.query.all()
                 for task in tasks:
                     db.session.delete(task)
-                assignments = Assignment.query.all()
-                for assign in assignments:
-                    db.session.delete(assign)
-                subs = Submission.query.all()
-                for sub in subs:
-                    db.session.delete(sub)
                 db.session.commit()
                 path = os.path.join(current_app.root_path, "static/uploaded_hours")
                 contents = os.listdir(path)
