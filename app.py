@@ -17,8 +17,8 @@ from werkzeug.security import generate_password_hash, check_password_hash
 basedir = os.path.abspath(os.path.dirname(__file__))
 document_name = 'cleanup_sheet_test'
 app = Flask(__name__)
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + os.path.join(basedir, 'data.sqlite')
-# app.config['SQLALCHEMY_DATABASE_URI'] = os.environ['DATABASE_URL']
+# app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + os.path.join(basedir, 'data.sqlite')
+app.config['SQLALCHEMY_DATABASE_URI'] = os.environ['DATABASE_URL']
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['SECRET_KEY'] = 'mysecretkey'
 
@@ -525,7 +525,8 @@ def reply():
     from modules import SkipHandler
     if 'confirm' in body.lower():
         assign.response = 'Confirm'
-        resp.message("Thank you for your confirmation. Details will be sent out shortly")
+        resp.message("Thank you for your confirmation. Submit your completed hour at "
+                     "cleanup-coordinator.herokuapp.com/submit")
     elif 'skip' in body.lower():
         assign.response = 'Skip'
         resp.message("Sorry you had to skip. We'll get you next time")
