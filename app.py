@@ -10,13 +10,15 @@ from flask_migrate import Migrate
 from twilio.twiml.messaging_response import MessagingResponse
 from werkzeug.security import generate_password_hash, check_password_hash
 
+# TODO: fix if last assignment (skips all the way through)
+
 # Initial setup for the Flask app and migration capabilities of the database, along with the instantiation
 # of the global variable db
 basedir = os.path.abspath(os.path.dirname(__file__))
-document_name = 'cleanup_sheet_test'
+document_name = 'cleanup_sheet'
 app = Flask(__name__)
-# app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + os.path.join(basedir, 'data.sqlite')
-app.config['SQLALCHEMY_DATABASE_URI'] = os.environ['DATABASE_URL']
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + os.path.join(basedir, 'data.sqlite')
+# app.config['SQLALCHEMY_DATABASE_URI'] = os.environ['DATABASE_URL']
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['SECRET_KEY'] = 'mysecretkey'
 
@@ -544,18 +546,18 @@ def delete():
         button_ids = request.values.keys()
         for button_id in button_ids:
             if 'delete_all' in button_id:
-                members_list = Member.query.all()
                 subs = Submission.query.all()
                 for sub in subs:
                     db.session.delete(sub)
                 assignments = Assignment.query.all()
                 for assign in assignments:
                     db.session.delete(assign)
-                for member in members_list:
-                    db.session.delete(member)
                 tasks = CleanupHour.query.all()
                 for task in tasks:
                     db.session.delete(task)
+                members_list = Member.query.all()
+                for member in members_list:
+                    db.session.delete(member)
                 db.session.commit()
                 path = os.path.join(current_app.root_path, "static/uploaded_hours")
                 if not os.path.exists(path):
