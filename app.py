@@ -15,7 +15,7 @@ from werkzeug.security import generate_password_hash, check_password_hash
 # Initial setup for the Flask app and migration capabilities of the database, along with the instantiation
 # of the global variable db
 basedir = os.path.abspath(os.path.dirname(__file__))
-document_name = 'cleanup_sheet'
+document_name = 'cleanup_sheet_test'
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + os.path.join(basedir, 'data.sqlite')
 # app.config['SQLALCHEMY_DATABASE_URI'] = os.environ['DATABASE_URL']
