@@ -462,6 +462,10 @@ def text_report():
         for assign in assignments:
             pair = (Member.query.get(assign.member_id), CleanupHour.query.get(assign.task_id))
             text_assigner.send_assignment(pair, assign.id)
+            member = Member.query.get(assign.member_id)
+            dir_path = os.path.join(current_app.root_path, f'static/uploaded_hours/{member.first + member.last}')
+            if not os.path.exists(dir_path):
+                os.makedirs(dir_path)
     except Exception as e:
         print(e)
         print('There was an error with sending the text to the member')
