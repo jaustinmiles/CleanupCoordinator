@@ -14,6 +14,7 @@ from werkzeug.security import generate_password_hash, check_password_hash
 
 # Initial setup for the Flask app and migration capabilities of the database, along with the instantiation
 # of the global variable db
+
 basedir = os.path.abspath(os.path.dirname(__file__))
 document_name = 'cleanup_sheet_test'
 app = Flask(__name__)
@@ -21,6 +22,7 @@ app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = os.environ['DATABASE_URL']
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['SECRET_KEY'] = 'mysecretkey'
+app.config['UPLOAD_FOLDER'] = os.path.join(basedir, 'static/all_uploads')
 
 
 db = SQLAlchemy(app)
@@ -247,6 +249,7 @@ def submit():
     form = SubmitHourForm()
     form.name.choices = get_member_choices()
     form.hour.choices = get_task_choices()
+    # if form.validate_on_submit():
     if form.validate_on_submit():
         assignment_id = form.token.data
         submitted_name = int(form.name.data)
@@ -256,13 +259,24 @@ def submit():
             flash("Some information you provided does not match up with information in the database. Please try again "
                   "or contact the housing manager.")
             return render_template('index.html')
+        return redirect(url_for('image_submission', assignment_id=assignment_id))
+
+    return render_template('submit.html', form=form)
+
+
+@app.route('/image-submission/<assignment_id>', methods=['GET', 'POST'])
+def image_submission(assignment_id):
+    if request.method == 'POST':
+        assign = Assignment.query.get(assignment_id)
         member = Member.query.get(assign.member_id)
         uploaded_files = request.files.getlist("file[]")
+        # uploaded_files = request.files.getlist('imgs')
         dir_path = os.path.join(current_app.root_path, f'static/uploaded_hours/{member.first + member.last}')
         if not os.path.exists(dir_path):
             os.makedirs(dir_path)
         for file in uploaded_files:
             filepath = os.path.join(dir_path, file.filename)
+            # filepath = os.path.join(dir_path, file)
             pic = Image.open(file)
             pic = pic.resize((1000, 1000))
             pic.save(filepath)
@@ -277,8 +291,8 @@ def submit():
         assign.response = 'Submitted'
         db.session.add(assign)
         db.session.commit()
-        return render_template('index.html')
-    return render_template('submit.html', form=form)
+        return redirect(url_for('index'))
+    return render_template('image_submission.html')
 
 
 @app.route('/members', methods=['GET', 'POST'])

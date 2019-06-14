@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <br>
+    <div class="container">
+        <form action="" method="post" enctype="multipart/form-data">
+            <div class="form-group">
+                <label for="file[]">Please drop your pictures here:</label>
+                <input class="form-control" type="file" name="file[]" multiple="">
+                <br>
+                <input class="btn btn-primary" type="submit" name="upload" value="Upload">
+                {#                        {{ form.imgs.label }}#}
+                {#                        {{ form.imgs(multiple="", class="form-control") }}#}
+            </div>
+        </form>
+    </div>
+{% endblock %}
