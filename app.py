@@ -624,10 +624,12 @@ def delete():
                 for a_dir in dirs:
                     rmtree(a_dir)
                 all_uploads = os.path.join(current_app.root_path, "static/all_uploads")
-                contents = os.listdir(all_uploads)
-                files = [os.path.join(all_uploads, content) for content in contents]
-                for file in files:
-                    os.remove(file)
+                rmtree(all_uploads)
+                os.mkdir(all_uploads)
+                # contents = os.listdir(all_uploads)
+                # files = [os.path.join(all_uploads, content) for content in contents]
+                # for file in files:
+                #     os.remove(file)
                 return redirect(url_for('index'))
 
     return render_template('delete.html')
