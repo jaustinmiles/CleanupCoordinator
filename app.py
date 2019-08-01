@@ -1,8 +1,8 @@
+import json
 import os
 from os.path import isfile, join, isdir
 
-from PIL import Image
-
+import boto3
 from flask import Flask, render_template, redirect, url_for, request, flash, current_app
 from flask_login import UserMixin, LoginManager, login_required, login_user, logout_user
 from flask_sqlalchemy import SQLAlchemy
@@ -11,9 +11,11 @@ from twilio.twiml.messaging_response import MessagingResponse
 from werkzeug.security import generate_password_hash, check_password_hash
 
 # TODO: fix if last assignment (skips all the way through)
+# TODO: add implementation for skip handling
 
 # Initial setup for the Flask app and migration capabilities of the database, along with the instantiation
 # of the global variable db
+from werkzeug.utils import secure_filename
 
 basedir = os.path.abspath(os.path.dirname(__file__))
 document_name = 'cleanup_sheet_test'
@@ -22,7 +24,7 @@ app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = os.environ['DATABASE_URL']
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['SECRET_KEY'] = 'mysecretkey'
-app.config['UPLOAD_FOLDER'] = os.path.join(basedir, 'static/all_uploads')
+app.config['UPLOAD_FOLDER'] = os.path.join(basedir, 'static', 'all_uploads')
 
 
 db = SQLAlchemy(app)
@@ -217,6 +219,11 @@ class Submission(db.Model):
         self.reviewed = reviewed
 
 
+# Wrapper class used to track whether the user has downloaded submissions yet
+class DownloadTracker:
+    submissions_downloaded = False
+
+
 # Begin App
 
 
@@ -270,29 +277,43 @@ def image_submission(assignment_id):
         assign = Assignment.query.get(assignment_id)
         member = Member.query.get(assign.member_id)
         uploaded_files = request.files.getlist("file[]")
-        # uploaded_files = request.files.getlist('imgs')
-        dir_path = os.path.join(current_app.root_path, f'static/uploaded_hours/{member.first + member.last}')
-        if not os.path.exists(dir_path):
-            os.makedirs(dir_path)
+        bucket_name, client = get_boto3_client()
+        filepath = f'uploaded_hours/{member.first + member.last}/'
         for file in uploaded_files:
-            filepath = os.path.join(dir_path, file.filename)
-            # filepath = os.path.join(dir_path, file)
-            pic = Image.open(file)
-            pic = pic.resize((1000, 1000))
-            pic.save(filepath)
-        mypath = join(os.path.abspath(os.path.dirname(__file__)), 'static/uploaded_hours')
-        uploads = [f for f in os.listdir(mypath) if isdir(join(mypath, f))]
-        for upload in uploads:
-            if Submission.query.filter_by(dir_name=upload).first() is None:
-                sub = Submission(upload, assignment_id)
-                db.session.add(sub)
-                db.session.commit()
+            filename = secure_filename(file.filename)
+            fn = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+            file.save(fn)
+            content = open(fn, 'rb')
+            client.put_object(
+                Bucket=bucket_name,
+                Key=filepath + filename,
+                Body=content
+            )
+        if Submission.query.filter_by(dir_name=filepath).first() is None:
+            sub = Submission(filepath, assignment_id)
+            db.session.add(sub)
+            db.session.commit()
         flash("Your submission was successful. Thank you for completing your task!")
         assign.response = 'Submitted'
         db.session.add(assign)
         db.session.commit()
         return redirect(url_for('index'))
     return render_template('image_submission.html')
+
+
+def get_boto3_client():
+    with open('aws-creds.json') as f:
+        creds = json.load(f)
+    access_key = creds['access_key_id']
+    secret = creds['secret_access_key']
+    bucket_name = "cleanup-coordinator"
+    client = boto3.client(
+        's3',
+        aws_access_key_id=access_key,
+        aws_secret_access_key=secret,
+        region_name='us-east-1'
+    )
+    return bucket_name, client
 
 
 @app.route('/members', methods=['GET', 'POST'])
@@ -565,8 +586,16 @@ def delete():
         button_ids = request.values.keys()
         for button_id in button_ids:
             if 'delete_all' in button_id:
+                bucket_name, client = get_boto3_client()
                 subs = Submission.query.all()
                 for sub in subs:
+                    paginator = client.get_paginator('list_objects')
+                    prefix = sub.dir_name
+                    operation_params = {'Bucket': bucket_name, 'Prefix': prefix}
+                    page_iterator = paginator.paginate(**operation_params)
+                    for page in page_iterator:
+                        for file in page['Contents']:
+                            client.delete_object(Bucket=bucket_name, Key=file['Key'])
                     db.session.delete(sub)
                 assignments = Assignment.query.all()
                 for assign in assignments:
@@ -588,6 +617,11 @@ def delete():
                 from shutil import rmtree
                 for a_dir in dirs:
                     rmtree(a_dir)
+                all_uploads = os.path.join(current_app.root_path, "static/all_uploads")
+                contents = os.listdir(all_uploads)
+                files = [os.path.join(all_uploads, content) for content in contents]
+                for file in files:
+                    os.remove(file)
                 return redirect(url_for('index'))
 
     return render_template('delete.html')
@@ -604,10 +638,10 @@ def login():
     from utils.components import LoginForm
     form = LoginForm()
     if form.validate_on_submit():
-        user = User.query.filter_by(email=form.email.data).first()
-        if user is not None and user.check_password(form.password.data):
-            login_user(user)
-            flash(f"Welcome, {user.username}")
+        current_user = User.query.filter_by(email=form.email.data).first()
+        if current_user is not None and current_user.check_password(form.password.data):
+            login_user(current_user)
+            flash(f"Welcome, {current_user.username}")
 
             next_request = request.args.get('next')
 
@@ -684,7 +718,20 @@ def review(identifier):
     member = Member.query.get(assign.member_id)
     task = CleanupHour.query.get(assign.task_id)
     try:
-        upload_path = join(os.path.abspath(os.path.dirname(__file__)), f'static/uploaded_hours/{sub.dir_name}')
+        upload_path = join(os.path.abspath(os.path.dirname(__file__)), f'static/{sub.dir_name}')
+        if not DownloadTracker.submissions_downloaded:
+            if not os.path.exists(upload_path):
+                os.mkdir(upload_path)
+            bucket_name, client = get_boto3_client()
+            paginator = client.get_paginator('list_objects')
+            prefix = sub.dir_name
+            operation_params = {'Bucket': bucket_name, 'Prefix': prefix}
+            page_iterator = paginator.paginate(**operation_params)
+            save_as = f'{upload_path}successful_save'
+            for page in page_iterator:
+                for i, file in enumerate(page['Contents']):
+                    to_save = save_as + str(i) + '.jpg'
+                    client.download_file(bucket_name, file['Key'], to_save)
         uploads = [(sub.dir_name + '\\' + f) for f in os.listdir(upload_path) if isfile(join(upload_path, f))]
         enumerated = range(len(uploads))
     except Exception as e:
@@ -717,6 +764,36 @@ def publish():
                           "database!!")
                 return redirect(url_for('index'))
     return render_template('publish.html')
+
+
+@app.route('/download_submissions', methods=['GET', 'POST'])
+@login_required
+def download_submissions():
+    DownloadTracker.submissions_downloaded = True
+    subs = Submission.query.all()
+    if not subs:
+        flash("There are currently no submissions to review. Try again later or examine files manually.")
+        return redirect(url_for('index'))
+    for sub in subs:
+        try:
+            upload_path = join(os.path.abspath(os.path.dirname(__file__)), f'static/{sub.dir_name}')
+            if not os.path.exists(upload_path):
+                os.mkdir(upload_path)
+            bucket_name, client = get_boto3_client()
+            paginator = client.get_paginator('list_objects')
+            prefix = sub.dir_name
+            operation_params = {'Bucket': bucket_name, 'Prefix': prefix}
+            page_iterator = paginator.paginate(**operation_params)
+            save_as = f'{upload_path}successful_save'
+            for page in page_iterator:
+                for i, file in enumerate(page['Contents']):
+                    to_save = save_as + str(i) + '.jpg'
+                    client.download_file(bucket_name, file['Key'], to_save)
+        except Exception as e:
+            print(e)
+            flash(f"Some files were not downloaded properly. These files correspond to upload folder {sub.dir_name}")
+    flash("All files from AWS were downloaded correctly. Proceed to review")
+    return redirect(url_for("index"))
 
 
 db.create_all()

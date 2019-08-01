@@ -1,3 +1,4 @@
+boto3
 alembic==0.9.9
 blinker==1.4
 cachetools==3.1.0
@@ -50,3 +51,4 @@ URLObject==2.4.3
 Werkzeug==0.14.1
 wincertstore==0.2
 WTForms==2.1
+boto3=1.0.0

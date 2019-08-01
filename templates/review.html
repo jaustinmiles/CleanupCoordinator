@@ -4,7 +4,7 @@
     <div class="container" align="center">
         <h1>Review submission for {{ member.first + ' ' + member.last }}</h1>
         {% for i in enumerated %}
-            <img src="../static/uploaded_hours/{{ uploads[i] }}" class="d-block w-25" alt="...">
+            <img src="../static/{{ uploads[i] }}" class="d-block w-50" alt="...">
         {% endfor %}
     </div>
     <br>
