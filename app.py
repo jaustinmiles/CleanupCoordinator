@@ -37,7 +37,6 @@ login_manager.login_view = 'login'
 
 s3 = S3Connection(os.environ['AWS_ACCESS_KEY_ID'], os.environ['AWS_SECRET_ACCESS_KEY'])
 
-
 # Models
 # TODO: Provide all documentation for login additions
 
@@ -598,8 +597,11 @@ def delete():
                     operation_params = {'Bucket': bucket_name, 'Prefix': prefix}
                     page_iterator = paginator.paginate(**operation_params)
                     for page in page_iterator:
-                        for file in page['Contents']:
-                            client.delete_object(Bucket=bucket_name, Key=file['Key'])
+                        try:
+                            for file in page['Contents']:
+                                client.delete_object(Bucket=bucket_name, Key=file['Key'])
+                        except Exception as e:
+                            print(e)
                     db.session.delete(sub)
                 assignments = Assignment.query.all()
                 for assign in assignments:
