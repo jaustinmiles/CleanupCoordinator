@@ -27,7 +27,6 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['SECRET_KEY'] = 'mysecretkey'
 app.config['UPLOAD_FOLDER'] = os.path.join(basedir, 'static', 'all_uploads')
 
-
 db = SQLAlchemy(app)
 Migrate(app, db)
 
