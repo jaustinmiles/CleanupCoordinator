@@ -10,8 +10,8 @@ from flask_migrate import Migrate
 from twilio.twiml.messaging_response import MessagingResponse
 from werkzeug.security import generate_password_hash, check_password_hash
 
-# TODO: fix if last assignment (skips all the way through)
-# TODO: add implementation for skip handling
+# TODO: fix weird result of images from last submission loading
+# TODO: handle logging in case of database or aws failure
 
 # Initial setup for the Flask app and migration capabilities of the database, along with the instantiation
 # of the global variable db
@@ -38,7 +38,7 @@ login_manager.login_view = 'login'
 s3 = S3Connection(os.environ['AWS_ACCESS_KEY_ID'], os.environ['AWS_SECRET_ACCESS_KEY'])
 
 # Models
-# TODO: Provide all documentation for login additions
+# TODO: Provide all documentation
 
 
 class Member(db.Model):
@@ -52,8 +52,10 @@ class Member(db.Model):
     active = db.Column(db.Boolean)
     hours = db.Column(db.Integer)
     assigned = db.Column(db.Boolean)
+    skips = db.Column(db.Integer)
 
-    def __init__(self, first: str, last: str, phone: str, email: str, status: str, active: bool, hours, assigned=False):
+    def __init__(self, first: str, last: str, phone: str, email: str, status: str, active: bool, hours, skips,
+                 assigned=False):
         """
         Holds metadata and real data for members of the fraternity.
         Stored in the hours field is the running total of cleanup hours
@@ -74,6 +76,7 @@ class Member(db.Model):
         self.status = status
         self.active = active
         self.hours = hours
+        self.skips = skips
         self.assigned = assigned
 
     def __str__(self):
@@ -566,9 +569,23 @@ def reply():
         resp.message("Thank you for your confirmation. Submit your completed hour at "
                      "cleanup-coordinator.herokuapp.com/submit")
     elif 'skip' in body.lower():
-        assign.response = 'Skip'
-        resp.message("Sorry you had to skip. We'll get you next time")
-        SkipHandler.reassign(number, number_no_1)
+        member = Member.query.get(assign.member_id)
+        if member.skips >= 2:
+            resp.message("Sorry, but it looks like you've already used both of your skips, so you've been confirmed."
+                         + " If this is incorrect, contact the housing manager.")
+            assign.response = 'Confirm'
+            db.session.add(assign)
+            db.session.commit()
+            return str(resp)
+        try:
+            SkipHandler.reassign(number, number_no_1)
+            resp.message("Sorry you had to skip. We'll get you next time")
+            assign.response = 'Skip'
+            member.skips += 1
+            db.session.add(member)
+        except Exception as e:
+            print(e)
+            resp.message("Your task could not be skipped. Please contact the housing manager if you see this message.")
     else:
         resp.message("The message you sent was not a valid option. Please try again")
     db.session.add(assign)

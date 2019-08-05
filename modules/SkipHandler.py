@@ -26,9 +26,11 @@ def reassign(phone, phone_no_1):
     phone = member.phone
     phone_fixed = '+1' + ''.join([char for char in phone if char != '-'])
     pair = Assignment(member.id, task.id, phone_fixed)
-    db.session.add(pair)
-    db.session.commit()
+    member.assigned = True
     text_client.send_assignment((member, task), pair.id)
+    db.session.add(pair)
+    db.session.add(member)
+    db.session.commit()
 
 
 def get_member_object():

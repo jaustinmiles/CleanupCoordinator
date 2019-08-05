@@ -13,6 +13,7 @@ def generate_members() -> list:
     """
 
     hours_dict = generate_hours()
+    skips_dict = generate_skips()
     scope = ['https://spreadsheets.google.com/feeds', 'https://www.googleapis.com/auth/drive']
     creds = ServiceAccountCredentials.from_json_keyfile_name('client_secret.json', scope)
     client = gspread.authorize(creds)
@@ -30,7 +31,8 @@ def generate_members() -> list:
         status = member_row[4]
         active = 'TRUE' in member_row[5]
         hours = hours_dict.get(name_first.strip() + name_last.strip(), -1)
-        member = Member(name_first, name_last, phone, email, status, active, hours)
+        skips = skips_dict.get(name_first.strip() + name_last.strip(), -1)
+        member = Member(name_first, name_last, phone, email, status, active, hours, skips)
         members.append(member)
         # print(member)
     return members
@@ -57,6 +59,22 @@ def generate_hours() -> dict:
     return hours_dict
 
 
+def generate_skips():
+    scope = ['https://spreadsheets.google.com/feeds', 'https://www.googleapis.com/auth/drive']
+    creds = ServiceAccountCredentials.from_json_keyfile_name('client_secret.json', scope)
+    client = gspread.authorize(creds)
+    sheet = client.open(document_name).get_worksheet(3)
+    all_values = sheet.get_all_values()
+    col_one = sheet.col_values(1)
+    max_row = len(col_one)
+    skips_dict = {}
+    for i in range(1, max_row):
+        member_row = all_values[i]
+        skips_dict[member_row[0].strip() + member_row[1].strip()] = int(member_row[3])
+    return skips_dict
+
+
 if __name__ == '__main__':
     # To see output, uncomment print statements in generate_members()
-    generate_members()
+    # generate_members()
+    print(generate_hours())
