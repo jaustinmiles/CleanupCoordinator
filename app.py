@@ -496,19 +496,20 @@ def text_report():
     :return: template for the text report
     """
     from modules.TextClient import initialize_text_assigner
-    try:
-        text_assigner = initialize_text_assigner()
-        assignments = Assignment.query.all()
-        for assign in assignments:
+    text_assigner = initialize_text_assigner()
+    assignments = Assignment.query.all()
+    for assign in assignments:
+        try:
             pair = (Member.query.get(assign.member_id), CleanupHour.query.get(assign.task_id))
             text_assigner.send_assignment(pair, assign.id)
             member = Member.query.get(assign.member_id)
             dir_path = os.path.join(current_app.root_path, f'static/uploaded_hours/{member.first + member.last}')
             if not os.path.exists(dir_path):
                 os.makedirs(dir_path)
-    except Exception as e:
-        print(e)
-        print('There was an error with sending the text to the member')
+        except Exception as e:
+            print(e)
+            print(f'There was an error with sending the text to the member id: {assign.member_id}'
+                  + f' and task id: {assign.task_id}')
     return render_template('text_report.html')
 
 
@@ -649,6 +650,30 @@ def delete():
                 return redirect(url_for('index'))
 
     return render_template('delete.html')
+
+
+@app.route('/send_reminders', methods=['GET', 'POST'])
+def send_reminders():
+    from modules.TextClient import initialize_text_assigner
+    if request.method == 'POST':
+        button_ids = request.values.keys()
+        for button_id in button_ids:
+            if 'send' in button_id:
+                assignments = Assignment.query.all()
+                member_list = []
+                for assign in assignments:
+                    try:
+                        m = Member.query.get(assign.member_id)
+                        if assign.response == "Pending":
+                            member_list.append(m)
+                    except Exception as e:
+                        print(e)
+                        flash("There was a problem querying some members from the database. Check that all assignments"
+                              + "are valid")
+                text_assigner = initialize_text_assigner()
+                text_assigner.send_reminders(member_list)
+
+    return render_template('send_reminders.html')
 
 
 @app.route('/login', methods=['GET', 'POST'])

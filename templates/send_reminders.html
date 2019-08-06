@@ -1,0 +1,12 @@
+{%  extends "base.html" %}
+
+{% block content %}
+    <div class="jumbotron">
+        <h3>Clicking the following will send text messages to all people who have not responded to their cleanup hour.
+            Make sure you want to send these messages before continuing</h3>
+        <form method="post">
+            <input class="btn btn-secondary" type="submit" name="send" value="Send Reminders">
+        </form>
+    </div>
+
+{% endblock %}

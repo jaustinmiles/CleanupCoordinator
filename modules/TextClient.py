@@ -24,6 +24,7 @@ class TextAssigner:
         Given this task, send_assignment will open the template text message file and append the
         str() representation of the Task to it. It also filters the phone numbers to alter them
         to Twilio format. The client will then send this message to the recipient
+        :param assignment_id: provided to add a verification submission token (the id itself) to the cleanup task.
         :param task_assignment: (Member, CleanupHour) tuple
         """
         member = task_assignment[0]
@@ -39,6 +40,18 @@ class TextAssigner:
             to=phone_fixed,
             from_=self.phone,
             body=text)
+
+    def send_reminders(self, member_list):
+        for member in member_list:
+            phone = member.phone
+            phone_fixed = '+1' + str([char for char in phone if char != '-'])
+            file = open('static/reminder_template.txt')
+            line = file.readline().strip()
+            file.close()
+            self.client.messages.create(
+                to=phone_fixed,
+                from_=self.phone,
+                body=line)
 
 
 def initialize_text_assigner() -> TextAssigner:
