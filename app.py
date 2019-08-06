@@ -12,6 +12,7 @@ from werkzeug.security import generate_password_hash, check_password_hash
 
 # TODO: fix weird result of images from last submission loading
 # TODO: handle logging in case of database or aws failure
+# TODO: fix issue with deleting from aws if uploaded_hours folder does not exist
 
 # Initial setup for the Flask app and migration capabilities of the database, along with the instantiation
 # of the global variable db
@@ -287,6 +288,8 @@ def image_submission(assignment_id):
         for file in uploaded_files:
             filename = secure_filename(file.filename)
             fn = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+            if not os.path.exists(app.config['UPLOAD_FOLDER']):
+                os.mkdir(app.config['UPLOAD_FOLDER'])
             file.save(fn)
             content = open(fn, 'rb')
             client.put_object(
