@@ -13,6 +13,7 @@ from werkzeug.security import generate_password_hash, check_password_hash
 # TODO: fix weird result of images from last submission loading
 # TODO: handle logging in case of database or aws failure
 # TODO: fix issue with deleting from aws if uploaded_hours folder does not exist
+# TODO: fix issue with retrieval of submission files if folder does not exist
 
 # Initial setup for the Flask app and migration capabilities of the database, along with the instantiation
 # of the global variable db
@@ -22,8 +23,8 @@ from boto.s3.connection import S3Connection
 basedir = os.path.abspath(os.path.dirname(__file__))
 document_name = 'cleanup_sheet_test'
 app = Flask(__name__)
-# app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + os.path.join(basedir, 'data.sqlite')
-app.config['SQLALCHEMY_DATABASE_URI'] = os.environ['DATABASE_URL']
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + os.path.join(basedir, 'data.sqlite')
+# app.config['SQLALCHEMY_DATABASE_URI'] = os.environ['DATABASE_URL']
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['SECRET_KEY'] = 'mysecretkey'
 app.config['UPLOAD_FOLDER'] = os.path.join(basedir, 'static', 'all_uploads')
@@ -35,7 +36,7 @@ login_manager = LoginManager()
 login_manager.init_app(app)
 login_manager.login_view = 'login'
 
-s3 = S3Connection(os.environ['AWS_ACCESS_KEY_ID'], os.environ['AWS_SECRET_ACCESS_KEY'])
+# s3 = S3Connection(os.environ['AWS_ACCESS_KEY_ID'], os.environ['AWS_SECRET_ACCESS_KEY'])
 
 # Models
 # TODO: Provide all documentation
@@ -284,7 +285,7 @@ def image_submission(assignment_id):
         member = Member.query.get(assign.member_id)
         uploaded_files = request.files.getlist("file[]")
         bucket_name, client = get_boto3_client()
-        filepath = f'uploaded_hours/{member.first + member.last}/'
+        filepath = os.path.join('uploaded_hours', member.first + member.last)
         for file in uploaded_files:
             filename = secure_filename(file.filename)
             fn = os.path.join(app.config['UPLOAD_FOLDER'], filename)
@@ -770,16 +771,19 @@ def review(identifier):
     member = Member.query.get(assign.member_id)
     task = CleanupHour.query.get(assign.task_id)
     try:
-        upload_path = join(os.path.abspath(os.path.dirname(__file__)), f'static/{sub.dir_name}')
+        upload_path = join(os.path.abspath(os.path.dirname(__file__)), 'static', sub.dir_name)
+        upload_path_no_slash = upload_path[:-1]
         if not DownloadTracker.submissions_downloaded:
             if not os.path.exists(upload_path):
                 os.mkdir(upload_path)
+            # if not os.path.exists(upload_path_no_slash):
+            #     os.mkdir(upload_path_no_slash)
             bucket_name, client = get_boto3_client()
             paginator = client.get_paginator('list_objects')
             prefix = sub.dir_name
             operation_params = {'Bucket': bucket_name, 'Prefix': prefix}
             page_iterator = paginator.paginate(**operation_params)
-            save_as = f'{upload_path}successful_save'
+            save_as = os.path.join(upload_path, 'successful_save')
             for page in page_iterator:
                 for i, file in enumerate(page['Contents']):
                     to_save = save_as + str(i) + '.jpg'
