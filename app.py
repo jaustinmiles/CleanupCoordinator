@@ -23,8 +23,8 @@ from boto.s3.connection import S3Connection
 basedir = os.path.abspath(os.path.dirname(__file__))
 document_name = 'cleanup_sheet_test'
 app = Flask(__name__)
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + os.path.join(basedir, 'data.sqlite')
-# app.config['SQLALCHEMY_DATABASE_URI'] = os.environ['DATABASE_URL']
+# app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + os.path.join(basedir, 'data.sqlite')
+app.config['SQLALCHEMY_DATABASE_URI'] = os.environ['DATABASE_URL']
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['SECRET_KEY'] = 'mysecretkey'
 app.config['UPLOAD_FOLDER'] = os.path.join(basedir, 'static', 'all_uploads')
@@ -36,7 +36,7 @@ login_manager = LoginManager()
 login_manager.init_app(app)
 login_manager.login_view = 'login'
 
-# s3 = S3Connection(os.environ['AWS_ACCESS_KEY_ID'], os.environ['AWS_SECRET_ACCESS_KEY'])
+s3 = S3Connection(os.environ['AWS_ACCESS_KEY_ID'], os.environ['AWS_SECRET_ACCESS_KEY'])
 
 # Models
 # TODO: Provide all documentation
