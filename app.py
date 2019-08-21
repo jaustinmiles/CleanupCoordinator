@@ -20,7 +20,7 @@ from werkzeug.utils import secure_filename
 from boto.s3.connection import S3Connection
 
 basedir = os.path.abspath(os.path.dirname(__file__))
-document_name = 'cleanup_sheet_test'
+document_name = 'cleanup_sheet'
 app = Flask(__name__)
 # app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + os.path.join(basedir, 'data.sqlite')
 app.config['SQLALCHEMY_DATABASE_URI'] = os.environ['DATABASE_URL']
