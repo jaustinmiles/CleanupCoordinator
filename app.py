@@ -12,8 +12,7 @@ from werkzeug.security import generate_password_hash, check_password_hash
 
 # TODO: fix weird result of images from last submission loading
 # TODO: handle logging in case of database or aws failure
-# TODO: fix issue with deleting from aws if uploaded_hours folder does not exist
-# TODO: fix issue with retrieval of submission files if folder does not exist
+# TODO: fix issues with submit token is none
 
 # Initial setup for the Flask app and migration capabilities of the database, along with the instantiation
 # of the global variable db
@@ -860,4 +859,4 @@ if not User.query.filter_by(email='house.gtdeltachi@gmail.com').first():
     db.session.commit()
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(debug=True, threaded=True)
