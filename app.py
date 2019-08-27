@@ -12,15 +12,16 @@ from werkzeug.security import generate_password_hash, check_password_hash
 
 # TODO: fix weird result of images from last submission loading
 # TODO: handle logging in case of database or aws failure
-# TODO: fix issues with submit token is none
-
+# TODO: increment skips allowed to 3
+# TODO: change cleanup hour message
 # Initial setup for the Flask app and migration capabilities of the database, along with the instantiation
 # of the global variable db
 from werkzeug.utils import secure_filename
 from boto.s3.connection import S3Connection
 
 basedir = os.path.abspath(os.path.dirname(__file__))
-document_name = 'cleanup_sheet_test'
+# DOCUMENT_NAME = 'cleanup_sheet_test'
+DOCUMENT_NAME = os.environ['DOCUMENT_NAME']
 app = Flask(__name__)
 # app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + os.path.join(basedir, 'data.sqlite')
 app.config['SQLALCHEMY_DATABASE_URI'] = os.environ['DATABASE_URL']
@@ -302,6 +303,7 @@ def image_submission(assignment_id):
             db.session.add(sub)
             db.session.commit()
         flash("Your submission was successful. Thank you for completing your task!")
+        DownloadTracker.submissions_downloaded = False
         assign.response = 'Submitted'
         db.session.add(assign)
         db.session.commit()
@@ -567,13 +569,14 @@ def reply():
         return str(resp)
     number_no_1 = number[1:]
     from modules import SkipHandler
+    member = Member.query.get(assign.member_id)
     if 'confirm' in body.lower():
         assign.response = 'Confirm'
         resp.message("Thank you for your confirmation. Submit your completed hour at "
                      "cleanup-coordinator.herokuapp.com/submit")
+
     elif 'skip' in body.lower():
-        member = Member.query.get(assign.member_id)
-        if member.skips >= 2:
+        if member.skips >= 3:
             resp.message("Sorry, but it looks like you've already used both of your skips, so you've been confirmed."
                          + " If this is incorrect, contact the housing manager.")
             assign.response = 'Confirm'
@@ -829,7 +832,7 @@ def download_submissions():
         return redirect(url_for('index'))
     for sub in subs:
         try:
-            upload_path = join(os.path.abspath(os.path.dirname(__file__)), f'static/{sub.dir_name}')
+            upload_path = join(os.path.abspath(os.path.dirname(__file__)), 'static', sub.dir_name)
             if not os.path.exists(upload_path):
                 os.mkdir(upload_path)
             bucket_name, client = get_boto3_client()
@@ -837,7 +840,7 @@ def download_submissions():
             prefix = sub.dir_name
             operation_params = {'Bucket': bucket_name, 'Prefix': prefix}
             page_iterator = paginator.paginate(**operation_params)
-            save_as = f'{upload_path}successful_save'
+            save_as = os.path.join(upload_path, 'successful_save')
             for page in page_iterator:
                 for i, file in enumerate(page['Contents']):
                     to_save = save_as + str(i) + '.jpg'

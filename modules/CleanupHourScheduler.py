@@ -1,6 +1,6 @@
 import gspread
 from app import CleanupHour
-from app import document_name
+from app import DOCUMENT_NAME
 
 from oauth2client.service_account import ServiceAccountCredentials
 
@@ -15,7 +15,7 @@ def schedule_hours() -> list:
     scope = ['https://spreadsheets.google.com/feeds', 'https://www.googleapis.com/auth/drive']
     creds = ServiceAccountCredentials.from_json_keyfile_name('client_secret.json', scope)
     client = gspread.authorize(creds)
-    sheet = client.open(document_name).get_worksheet(1)
+    sheet = client.open(DOCUMENT_NAME).get_worksheet(1)
     all_values = sheet.get_all_values()
     col_one = sheet.col_values(1)
     max_row = len(col_one)

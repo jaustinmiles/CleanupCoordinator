@@ -1,6 +1,6 @@
 import gspread
 from oauth2client.service_account import ServiceAccountCredentials
-from app import document_name, Member
+from app import DOCUMENT_NAME, Member
 
 RUNNING_TOTAL_COL = 3
 SKIPS_TOTAL_COL = 4
@@ -15,7 +15,7 @@ def update_hours():
     scope = ['https://spreadsheets.google.com/feeds', 'https://www.googleapis.com/auth/drive']
     creds = ServiceAccountCredentials.from_json_keyfile_name('client_secret.json', scope)
     client = gspread.authorize(creds)
-    sheet = client.open(document_name).get_worksheet(3)
+    sheet = client.open(DOCUMENT_NAME).get_worksheet(3)
     all_values = sheet.get_all_values()
     col_one = sheet.col_values(1)
     max_row = len(col_one)
