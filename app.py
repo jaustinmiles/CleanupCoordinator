@@ -20,7 +20,7 @@ from werkzeug.utils import secure_filename
 from boto.s3.connection import S3Connection
 
 basedir = os.path.abspath(os.path.dirname(__file__))
-document_name = 'cleanup_sheet'
+document_name = 'cleanup_sheet_test'
 app = Flask(__name__)
 # app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + os.path.join(basedir, 'data.sqlite')
 app.config['SQLALCHEMY_DATABASE_URI'] = os.environ['DATABASE_URL']
@@ -262,7 +262,6 @@ def submit():
     form = SubmitHourForm()
     form.name.choices = get_member_choices()
     form.hour.choices = get_task_choices()
-    # if form.validate_on_submit():
     if form.validate_on_submit():
         assignment_id = form.token.data
         submitted_name = int(form.name.data)
@@ -292,9 +291,10 @@ def image_submission(assignment_id):
                 os.mkdir(app.config['UPLOAD_FOLDER'])
             file.save(fn)
             content = open(fn, 'rb')
+            key = os.path.join(filepath, filename)
             client.put_object(
                 Bucket=bucket_name,
-                Key=filepath + filename,
+                Key=key,
                 Body=content
             )
         if Submission.query.filter_by(dir_name=filepath).first() is None:
@@ -744,7 +744,8 @@ def review_main():
                 db.session.add(assign)
                 if 'approve' in button_id:
                     member = Member.query.get(assign.member_id)
-                    member.hours += 1
+                    task = CleanupHour.query.get(assign.task_id)
+                    member.hours += task.worth
                     db.session.add(member)
                 db.session.commit()
                 return render_template('review_main.html', subs=subs)
@@ -771,12 +772,9 @@ def review(identifier):
     task = CleanupHour.query.get(assign.task_id)
     try:
         upload_path = join(os.path.abspath(os.path.dirname(__file__)), 'static', sub.dir_name)
-        upload_path_no_slash = upload_path[:-1]
         if not DownloadTracker.submissions_downloaded:
             if not os.path.exists(upload_path):
                 os.mkdir(upload_path)
-            # if not os.path.exists(upload_path_no_slash):
-            #     os.mkdir(upload_path_no_slash)
             bucket_name, client = get_boto3_client()
             paginator = client.get_paginator('list_objects')
             prefix = sub.dir_name

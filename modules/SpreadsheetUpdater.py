@@ -25,6 +25,8 @@ def update_hours():
         last_name = member_row[1].strip()
         member = Member.query.filter_by(first=first_name, last=last_name).first()
         if member is not None:
+            if not member.assigned:
+                continue
             # the sheet is indexed starting at 0, unlike the list from get_all_values. Adding 1 ensures proper indexing
             sheet.update_cell(i + 1, RUNNING_TOTAL_COL, member.hours)
             sheet.update_cell(i + 1, SKIPS_TOTAL_COL, member.skips)
