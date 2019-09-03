@@ -12,8 +12,6 @@ from werkzeug.security import generate_password_hash, check_password_hash
 
 # TODO: fix weird result of images from last submission loading
 # TODO: handle logging in case of database or aws failure
-# TODO: increment skips allowed to 3
-# TODO: change cleanup hour message
 # Initial setup for the Flask app and migration capabilities of the database, along with the instantiation
 # of the global variable db
 from werkzeug.utils import secure_filename
@@ -837,7 +835,13 @@ def download_submissions():
                 os.mkdir(upload_path)
             bucket_name, client = get_boto3_client()
             paginator = client.get_paginator('list_objects')
-            prefix = sub.dir_name
+            path = sub.dir_name
+            prefix = ''
+            for char in path:
+                if char != "\\":
+                    prefix += char
+                else:
+                    prefix += "/"
             operation_params = {'Bucket': bucket_name, 'Prefix': prefix}
             page_iterator = paginator.paginate(**operation_params)
             save_as = os.path.join(upload_path, 'successful_save')
