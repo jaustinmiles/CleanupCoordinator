@@ -1,10 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="3377c143-73d4-4660-99c7-89af4b0fc212" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app.py" beforeDir="false" afterPath="$PROJECT_DIR$/app.py" afterDir="false" />
-    </list>
+    <list default="true" id="3377c143-73d4-4660-99c7-89af4b0fc212" name="Default Changelist" comment="" />
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -70,8 +67,8 @@
       <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/app.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="-2329">
-              <caret line="37" lean-forward="true" selection-start-line="37" selection-end-line="37" />
+            <state relative-caret-position="-8670">
+              <caret line="315" column="39" lean-forward="true" selection-start-line="315" selection-start-column="39" selection-end-line="315" selection-end-column="39" />
               <folding>
                 <element signature="e#0#11#0" expanded="true" />
               </folding>
@@ -438,12 +435,12 @@
       <workItem from="1566775513964" duration="527000" />
       <workItem from="1566781413824" duration="1669000" />
       <workItem from="1566946017157" duration="4866000" />
-      <workItem from="1567467298047" duration="2962000" />
+      <workItem from="1567467298047" duration="3255000" />
     </task>
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="169822000" />
+    <option name="totallyTimeSpent" value="170115000" />
   </component>
   <component name="TodoView">
     <todo-panel id="selected-file">
@@ -458,12 +455,12 @@
     <frame x="-6" y="-6" width="1613" height="913" extended-state="6" />
     <editor active="true" />
     <layout>
-      <window_info active="true" content_ui="combo" id="Project" order="0" visible="true" weight="0.20064309" />
+      <window_info content_ui="combo" id="Project" order="0" visible="true" weight="0.20064309" />
       <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
       <window_info id="Favorites" order="2" side_tool="true" />
       <window_info anchor="bottom" id="Message" order="0" />
       <window_info anchor="bottom" id="Find" order="1" sideWeight="0.49946696" weight="0.32822478" />
-      <window_info anchor="bottom" id="Run" order="2" sideWeight="0.7121535" visible="true" weight="0.19412516" />
+      <window_info anchor="bottom" id="Run" order="2" sideWeight="0.7121535" weight="0.31800765" />
       <window_info anchor="bottom" id="Debug" order="3" sideWeight="0.49840087" weight="0.3320562" />
       <window_info anchor="bottom" id="Cvs" order="4" weight="0.25" />
       <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
@@ -472,7 +469,7 @@
       <window_info anchor="bottom" id="Docker" order="8" show_stripe_button="false" />
       <window_info anchor="bottom" id="Version Control" order="9" weight="0.41791046" />
       <window_info anchor="bottom" id="Database Changes" order="10" show_stripe_button="false" />
-      <window_info anchor="bottom" id="Terminal" order="11" sideWeight="0.49520257" weight="0.35825545" />
+      <window_info active="true" anchor="bottom" id="Terminal" order="11" sideWeight="0.49520257" visible="true" weight="0.357599" />
       <window_info anchor="bottom" id="Event Log" order="12" sideWeight="0.50159913" side_tool="true" weight="0.35721704" />
       <window_info anchor="bottom" id="Python Console" order="13" sideWeight="0.4989035" weight="0.32917964" />
       <window_info anchor="bottom" id="Concurrent Activities Diagram" order="14" weight="0.32917964" />
@@ -880,8 +877,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/app.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-2329">
-          <caret line="37" lean-forward="true" selection-start-line="37" selection-end-line="37" />
+        <state relative-caret-position="-8670">
+          <caret line="315" column="39" lean-forward="true" selection-start-line="315" selection-start-column="39" selection-end-line="315" selection-end-column="39" />
           <folding>
             <element signature="e#0#11#0" expanded="true" />
           </folding>

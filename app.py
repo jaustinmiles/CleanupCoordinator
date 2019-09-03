@@ -778,7 +778,13 @@ def review(identifier):
                 os.mkdir(upload_path)
             bucket_name, client = get_boto3_client()
             paginator = client.get_paginator('list_objects')
-            prefix = sub.dir_name
+            path = sub.dir_name
+            prefix = ''
+            for char in path:
+                if char != "\\":
+                    prefix += char
+                else:
+                    prefix += "/"
             operation_params = {'Bucket': bucket_name, 'Prefix': prefix}
             page_iterator = paginator.paginate(**operation_params)
             save_as = os.path.join(upload_path, 'successful_save')
@@ -791,7 +797,7 @@ def review(identifier):
     except Exception as e:
         print(e)
         flash('There was an error retrieving the submission photos for the individual you are attempting to review. '
-              'Ask the Member to resubmit these photos or examine the folder manually.')
+              'Ask the Member to resubmit these photos or examine the folder manually.' + str(e))
         return redirect(url_for('index'))
     return render_template('review.html', uploads=uploads, member=member, task=task, enumerated=enumerated, sub=sub)
 
