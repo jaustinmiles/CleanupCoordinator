@@ -774,6 +774,9 @@ def review(identifier):
     try:
         upload_path = join(os.path.abspath(os.path.dirname(__file__)), 'static', sub.dir_name)
         if not DownloadTracker.submissions_downloaded:
+            upload_folder = join(os.path.abspath(os.path.dirname(__file__)), 'static', 'uploaded_hours')
+            if not os.path.exists(upload_folder):
+                os.mkdir(upload_folder)
             if not os.path.exists(upload_path):
                 os.mkdir(upload_path)
             bucket_name, client = get_boto3_client()
