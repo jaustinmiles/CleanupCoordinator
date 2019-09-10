@@ -832,6 +832,10 @@ def publish():
 @app.route('/download_submissions', methods=['GET', 'POST'])
 @login_required
 def download_submissions():
+    """
+
+    :return:
+    """
     DownloadTracker.submissions_downloaded = True
     subs = Submission.query.all()
     if not subs:
@@ -865,7 +869,7 @@ def download_submissions():
     return redirect(url_for("index"))
 
 
-db.create_all()
+# db.create_all()
 if not User.query.filter_by(email='house.gtdeltachi@gmail.com').first():
     user = User('house.gtdeltachi@gmail.com', 'housing_manager_main', 'dummy')
     user.password_hash = 'pbkdf2:sha256:50000$W3NRYkpm$492b17b4018a468ae742877ba7bfb2e3d8a5571cbbeeee020d430d40221179c0'
