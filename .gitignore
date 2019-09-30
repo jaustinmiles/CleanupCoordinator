@@ -5,5 +5,9 @@ requirements.txt
 *.xml
 __pycache__
 add_housing_access.py
+aws-creds.json
+data.sqlite
+setupdatabase.py
+venv
 modules/twilio_account.txt
 modules/twilio_token.txt

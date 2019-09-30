@@ -1,5 +1,6 @@
 from modules import MemberGenerator
 from modules import CleanupHourScheduler
+from modules.BathroomAssigner import BathroomAssigner
 
 
 class Assigner:
@@ -36,13 +37,34 @@ class Assigner:
         if len(self.filtered_members) == 0 or len(self.sorted_tasks) == 0:
             return -1, -1
         else:
-            member = self.filtered_members[0]
             task = self.sorted_tasks[0]
+            member = self.filtered_members[0]
             del self.filtered_members[0]
             del self.sorted_tasks[0]
             if len(self.filtered_members) == 0 or len(self.sorted_tasks) == 0:
                 self.finished = True
             return member, task
+
+    def assign_bathrooms(self):
+        bathroom_assigner = BathroomAssigner()
+        bathrooms = []
+        indices_to_remove = []
+        for i, task in enumerate(self.sorted_tasks):
+            if 'bathroom' in task.name.lower() and 'servery' not in task.name.lower():
+                pair = bathroom_assigner.assign_bathroom(task)
+                if pair is None:
+                    print(task)
+                    raise AssertionError("There was no one to assign this bathroom task, or the algorithm failed")
+                bathrooms.append(pair)
+                pair[0].assigned = True
+                indices_to_remove.append(i)
+        for i in range(len(indices_to_remove) - 1, -1, -1):
+            del self.sorted_tasks[indices_to_remove[i]]
+        # TODO: fix result of member not being deleted due to shallow copy of object
+        for i in range(len(self.filtered_members) - 1, -1, -1):
+            if self.filtered_members[i].assigned:
+                del self.filtered_members[i]
+        return bathrooms
 
 
 def get_assigner(member_list: list, task_list: list) -> Assigner:
@@ -95,9 +117,17 @@ if __name__ == '__main__':
     member_list1 = MemberGenerator.generate_members()
     sorted_tasks1 = CleanupHourScheduler.schedule_hours()
     assigner1 = get_assigner(member_list1, sorted_tasks1)
-    while not assigner1.finished:
-        assignment = assigner1.assign_task()
-        print("########### NEW TASK BELOW ##############\n")
-        print(assignment[0])
-        print(assignment[1])
-        print("########### END OF TASK ##########\n\n\n")
+    bathrooms = assigner1.assign_bathrooms()
+    for bathroom in bathrooms:
+        print(bathroom[0].first + bathroom[0].last + str(bathroom[0].hours))
+        print(bathroom[1].name)
+    for task in assigner1.sorted_tasks:
+        print(task.name)
+    for member in assigner1.filtered_members:
+        print(member.first + " " + member.last)
+    # while not assigner1.finished:
+    #     assignment = assigner1.assign_task()
+    #     print("########### NEW TASK BELOW ##############\n")
+    #     print(assignment[0])
+    #     print(assignment[1])
+    #     print("########### END OF TASK ##########\n\n\n")
