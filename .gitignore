@@ -9,6 +9,7 @@ add_housing_access.py
 aws-creds.json
 data.sqlite
 setupdatabase.py
+.env
 venv
 modules/twilio_account.txt
 modules/twilio_token.txt
