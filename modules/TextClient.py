@@ -12,8 +12,11 @@ class TextAssigner:
         Client that has the capability of creating and sending messages, and it has the phone
         number of the text service (the number texts will be sent from).
         """
-        token = open('modules/twilio_token.txt').readline().strip()
-        account_sid = open('modules/twilio_account.txt').readline().strip()
+        # token = open('modules/twilio_token.txt').readline().strip()
+        # account_sid = open('modules/twilio_account.txt').readline().strip()
+        from app import TWILIO_ACCOUNT, TWILIO_TOKEN
+        token = TWILIO_TOKEN
+        account_sid = TWILIO_ACCOUNT
         client = Client(account_sid, token)
         self.client = client
         self.phone = "+14702020929"

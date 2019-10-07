@@ -21,14 +21,18 @@ from boto.s3.connection import S3Connection
 reminders = celery.Celery('reminders')
 
 basedir = os.path.abspath(os.path.dirname(__file__))
-DOCUMENT_NAME = 'cleanup_sheet'
-# DOCUMENT_NAME = os.environ['DOCUMENT_NAME']
+# DOCUMENT_NAME = 'cleanup_sheet_test'
+DOCUMENT_NAME = os.environ['DOCUMENT_NAME']
 app = Flask(__name__)
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + os.path.join(basedir, 'data.sqlite')
-# app.config['SQLALCHEMY_DATABASE_URI'] = os.environ['DATABASE_URL']
+# app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + os.path.join(basedir, 'data.sqlite')
+app.config['SQLALCHEMY_DATABASE_URI'] = os.environ['DATABASE_URL']
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['SECRET_KEY'] = 'mysecretkey'
 app.config['UPLOAD_FOLDER'] = os.path.join(basedir, 'static', 'all_uploads')
+TWILIO_ACCOUNT = os.environ['TWILIO_ACCOUNT']
+TWILIO_TOKEN = os.environ['TWILIO_TOKEN']
+AWS_ACCESS_KEY = os.environ['AWS_ACCESS_KEY_ID']
+AWS_SECRET = os.environ['AWS_SECRET_ACCESS_KEY']
 
 db = SQLAlchemy(app)
 Migrate(app, db)
@@ -37,7 +41,7 @@ login_manager = LoginManager()
 login_manager.init_app(app)
 login_manager.login_view = 'login'
 
-# s3 = S3Connection(os.environ['AWS_ACCESS_KEY_ID'], os.environ['AWS_SECRET_ACCESS_KEY'])
+s3 = S3Connection(os.environ['AWS_ACCESS_KEY_ID'], os.environ['AWS_SECRET_ACCESS_KEY'])
 
 # Models
 # TODO: Provide all documentation
@@ -313,10 +317,12 @@ def image_submission(assignment_id):
 
 
 def get_boto3_client():
-    with open('aws-creds.json') as f:
-        creds = json.load(f)
-    access_key = creds['access_key_id']
-    secret = creds['secret_access_key']
+    # with open('aws-creds.json') as f:
+    #     creds = json.load(f)
+    # access_key = creds['access_key_id']
+    # secret = creds['secret_access_key']
+    access_key = AWS_ACCESS_KEY
+    secret = AWS_SECRET
     bucket_name = "cleanup-coordinator"
     client = boto3.client(
         's3',
