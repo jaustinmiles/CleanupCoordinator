@@ -41,7 +41,7 @@ def get_member_object():
     members = Member.query.all()
     sorted_members = sorted(members, key=lambda x: x.hours)
     for member in sorted_members:
-        if member.active and not member.assigned:
+        if member.active and not member.assigned and member.hours < 4:
             return member
     return None
 
