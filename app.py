@@ -13,6 +13,7 @@ from werkzeug.security import generate_password_hash, check_password_hash
 
 # TODO: fix weird result of images from last submission loading
 # TODO: handle logging in case of database or aws failure
+# TODO: fix skip handling if hours >= 4
 # Initial setup for the Flask app and migration capabilities of the database, along with the instantiation
 # of the global variable db
 from werkzeug.utils import secure_filename
@@ -598,7 +599,9 @@ def reply():
             db.session.add(member)
         except Exception as e:
             print(e)
-            resp.message("Your task could not be skipped. Please contact the housing manager if you see this message.")
+            resp.message("Your task could not be skipped because everyone else in the queue has all their hours." +
+                         "You have been auto-confirmed.")
+            assign.response = "Confirm"
     else:
         resp.message("The message you sent was not a valid option. Please try again")
     db.session.add(assign)
