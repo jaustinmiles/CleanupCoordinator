@@ -600,7 +600,7 @@ def reply():
         except Exception as e:
             print(e)
             resp.message("Your task could not be skipped because everyone else in the queue has all their hours." +
-                         "You have been auto-confirmed.")
+                         " You have been auto-confirmed.")
             assign.response = "Confirm"
     else:
         resp.message("The message you sent was not a valid option. Please try again")
