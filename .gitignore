@@ -11,3 +11,4 @@ setupdatabase.py
 venv
 modules/twilio_account.txt
 modules/twilio_token.txt
+client_secret.json
