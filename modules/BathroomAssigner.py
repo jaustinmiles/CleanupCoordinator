@@ -1,10 +1,11 @@
+import os
+
 import gspread
 from oauth2client.service_account import ServiceAccountCredentials
 
 # from app import DOCUMENT_NAME
-from app import CleanupHour, db, Member
+from app import CleanupHour, db, Member, basedir, DOCUMENT_NAME
 
-DOCUMENT_NAME = 'cleanup_sheet'
 BATHROOM_SHEET = 4
 FIRST_COL = 0
 LAST_COL = 1
@@ -16,9 +17,10 @@ class BathroomAssigner:
     def __init__(self):
         self.floor_plan = self.generate_floor_plan()
 
-    def generate_floor_plan(self):
+    @staticmethod
+    def generate_floor_plan():
         scope = ['https://spreadsheets.google.com/feeds', 'https://www.googleapis.com/auth/drive']
-        creds = ServiceAccountCredentials.from_json_keyfile_name('client_secret.json', scope)
+        creds = ServiceAccountCredentials.from_json_keyfile_name(os.path.join(basedir, 'client_secret.json'), scope)
         client = gspread.authorize(creds)
         sheet = client.open(DOCUMENT_NAME).get_worksheet(BATHROOM_SHEET)
         all_values = sheet.get_all_values()

@@ -1,6 +1,8 @@
+import os
+
 import gspread
 from oauth2client.service_account import ServiceAccountCredentials
-from app import Member, DOCUMENT_NAME
+from app import Member, DOCUMENT_NAME, basedir
 
 
 def generate_members() -> list:
@@ -15,7 +17,7 @@ def generate_members() -> list:
     hours_dict = generate_hours()
     skips_dict = generate_skips()
     scope = ['https://spreadsheets.google.com/feeds', 'https://www.googleapis.com/auth/drive']
-    creds = ServiceAccountCredentials.from_json_keyfile_name('client_secret.json', scope)
+    creds = ServiceAccountCredentials.from_json_keyfile_name(os.path.join(basedir, 'client_secret.json'), scope)
     client = gspread.authorize(creds)
     sheet = client.open(DOCUMENT_NAME).get_worksheet(2)
     all_values = sheet.get_all_values()
@@ -46,7 +48,7 @@ def generate_hours() -> dict:
     :return: dict of hours mapping value 'hours' to key 'last name'
     """
     scope = ['https://spreadsheets.google.com/feeds', 'https://www.googleapis.com/auth/drive']
-    creds = ServiceAccountCredentials.from_json_keyfile_name('client_secret.json', scope)
+    creds = ServiceAccountCredentials.from_json_keyfile_name(os.path.join(basedir, 'client_secret.json'), scope)
     client = gspread.authorize(creds)
     sheet = client.open(DOCUMENT_NAME).get_worksheet(3)
     all_values = sheet.get_all_values()
@@ -61,7 +63,7 @@ def generate_hours() -> dict:
 
 def generate_skips():
     scope = ['https://spreadsheets.google.com/feeds', 'https://www.googleapis.com/auth/drive']
-    creds = ServiceAccountCredentials.from_json_keyfile_name('client_secret.json', scope)
+    creds = ServiceAccountCredentials.from_json_keyfile_name(os.path.join(basedir, 'client_secret.json'), scope)
     client = gspread.authorize(creds)
     sheet = client.open(DOCUMENT_NAME).get_worksheet(3)
     all_values = sheet.get_all_values()
@@ -76,5 +78,5 @@ def generate_skips():
 
 if __name__ == '__main__':
     # To see output, uncomment print statements in generate_members()
-    # generate_members()
+    generate_members()
     print(generate_hours())
