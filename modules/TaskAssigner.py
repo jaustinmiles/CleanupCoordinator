@@ -51,7 +51,7 @@ class Assigner:
         indices_to_remove = []
         for i, task in enumerate(self.sorted_tasks):
             if 'bathroom' in task.name.lower() and 'servery' not in task.name.lower():
-                pair = bathroom_assigner.assign_bathroom(task)
+                pair = bathroom_assigner.assign_bathroom(task, self.filtered_members)
                 if pair is None:
                     print(task)
                     raise AssertionError("There was no one to assign this bathroom task, or the algorithm failed")
@@ -116,15 +116,30 @@ def filter_members(member_list) -> list:
 if __name__ == '__main__':
     member_list1 = MemberGenerator.generate_members()
     sorted_tasks1 = CleanupHourScheduler.schedule_hours()
+    # assigner1 = get_assigner(member_list1, sorted_tasks1)
+    # bathrooms = assigner1.assign_bathrooms()
+
+    #Example pipeline of bathroom
+    #TODO: The following contains all the logic to get members assigned to bathrooms as long as you pass in the correct
+    # list. Next steps are to filter the list for members who have all their cleanup hours, and add a bathrooms parameter
+    # to the private fields of the task assigner to be used when the assignments are actually sent out. May need to refactor
+    # class to simply build a list of all assignments, and add the bathrooms there.
+    bathroom_assigner = BathroomAssigner()
+    bathroom_tasks = []
+    for i in range(len(sorted_tasks1) -1, -1, -1):
+        task = sorted_tasks1[i]
+        if 'bathroom' in task.name.lower() and 'servery' not in task.name.lower():
+            bathroom_tasks.append(task)
+            del sorted_tasks1[i]
+    filtered = filter_members(member_list1)
+    results = []
+    for task in bathroom_tasks:
+        results.append(bathroom_assigner.assign_bathroom(task, filtered))
+    results[0][0].assigned = True
     assigner1 = get_assigner(member_list1, sorted_tasks1)
-    bathrooms = assigner1.assign_bathrooms()
-    for bathroom in bathrooms:
-        print(bathroom[0].first + bathroom[0].last + str(bathroom[0].hours))
-        print(bathroom[1].name)
-    for task in assigner1.sorted_tasks:
-        print(task.name)
-    for member in assigner1.filtered_members:
-        print(member.first + " " + member.last)
+    print(results)
+
+
     # while not assigner1.finished:
     #     assignment = assigner1.assign_task()
     #     print("########### NEW TASK BELOW ##############\n")

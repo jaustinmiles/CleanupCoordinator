@@ -4,6 +4,7 @@ from os.path import isfile, join, isdir
 
 import boto3
 import celery
+from celery import Celery
 from flask import Flask, render_template, redirect, url_for, request, flash, current_app
 from flask_login import UserMixin, LoginManager, login_required, login_user, logout_user
 from flask_sqlalchemy import SQLAlchemy
@@ -32,6 +33,8 @@ if MODE == "development":
         creds = json.load(f)
     AWS_ACCESS_KEY = creds['access_key_id']
     AWS_SECRET = creds['secret_access_key']
+    REDIS_URL = "redis://h:p86f42403fd815a66f7232f053636777649899392d9700987818b71ebb99312bd@ec2-3-215-116-159.compute-1.amazonaws.com:27779"
+    CELERY_URL = "redis://h:p86f42403fd815a66f7232f053636777649899392d9700987818b71ebb99312bd@ec2-3-215-116-159.compute-1.amazonaws.com:27779"
 else:
     DOCUMENT_NAME = os.environ['DOCUMENT_NAME']
     app.config['SQLALCHEMY_DATABASE_URI'] = os.environ['DATABASE_URL']
@@ -40,8 +43,10 @@ else:
     AWS_ACCESS_KEY = os.environ['AWS_ACCESS_KEY_ID']
     AWS_SECRET = os.environ['AWS_SECRET_ACCESS_KEY']
     s3 = S3Connection(os.environ['AWS_ACCESS_KEY_ID'], os.environ['AWS_SECRET_ACCESS_KEY'])
+    REDIS_URL = os.environ['REDIS_URL']
+    CELERY_URL = os.environ['CELERY_URL']
 
-reminders = celery.Celery('reminders')
+reminders = celery.Celery('app')
 
 
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
@@ -106,6 +111,9 @@ class Member(db.Model):
                + """\nStatus: """ + str(self.status) \
                + """\nActive: """ + str(self.active) \
                + """\nHours: """ + str(self.hours) + '\n'
+
+    def __repr__(self):
+        return self.first + " " + self.last
 
     def member_status(self) -> int:
         """
@@ -887,6 +895,24 @@ def download_submissions():
     flash("All files from AWS were downloaded correctly. Proceed to review")
     return redirect(url_for("index"))
 
+
+def celery():
+    celery_local = Celery(app.import_name, CELERY_URL)
+    # noinspection PyPep8Naming
+    celery_local.conf.update(app.config)
+    TaskBase = celery_local.Task
+    class ContextTask(TaskBase):
+        abstract = True
+
+        def __call__(self, *args, **kwargs):
+            with app.app_context():
+                return TaskBase.__call__(self, *args, **kwargs)
+
+    # noinspection PyPropertyAccess
+    celery_local.Task = ContextTask
+    return celery_local
+
+cel = celery()
 
 # db.create_all()
 if not User.query.filter_by(email='house.gtdeltachi@gmail.com').first():
