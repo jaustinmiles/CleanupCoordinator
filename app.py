@@ -479,12 +479,14 @@ def final_assignments():
     if member_list and hours_list:
         assigner = get_assigner(member_list, hours_list)
         successful_assignment = True
+        # handle bathrooms first, if none, an empty list should be returned, so there should be no exception
         try:
             assignments += assigner.assign_bathrooms()
         except ValueError as e:
-            flash("Bathroom assignment failed. Please make sure 'bathroom' is in the name of the task and only used to "
-                  + "identify a bathroom on a floor. Also, ensure the floor plan in the Google Drive document is correct"
-                  )
+            flash("Bathroom assignment failed. Please make sure 'bathroom' is in the name of the task and only"
+                  + " used to identify a bathroom on a floor. Also, ensure the floor plan in the Google Drive"
+                  + " document is correct.")
+            flash(str(e))
         while not assigner.finished:
             try:
                 pair = assigner.assign_task()

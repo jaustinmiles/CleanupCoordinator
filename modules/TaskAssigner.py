@@ -45,7 +45,13 @@ class Assigner:
                 self.finished = True
             return member, task
 
-    def assign_bathrooms(self):
+    def assign_bathrooms(self) -> list:
+        """
+        This method will only work if the assigner has been instantiated with a list of members already.
+        This method must also be called before any regular task assignments or a bathroom may be assigned
+        to someone not valid in the floor plan. If there are no bathrooms, there should be an empty list.
+        :return: list of (member, cleanup hour) assignments
+        """
         bathroom_assigner = BathroomAssigner()
         bathroom_tasks = []
         for i in range(len(self.sorted_tasks) - 1, -1, -1):
@@ -119,20 +125,12 @@ def filter_members(member_list) -> list:
 if __name__ == '__main__':
     member_list1 = MemberGenerator.generate_members()
     sorted_tasks1 = CleanupHourScheduler.schedule_hours()
-    # assigner1 = get_assigner(member_list1, sorted_tasks1)
-    # bathrooms = assigner1.assign_bathrooms()
+    assigner1 = get_assigner(member_list1, sorted_tasks1)
+    bathrooms = assigner1.assign_bathrooms()
 
-    #Example pipeline of bathroom
-    #TODO: The following contains all the logic to get members assigned to bathrooms as long as you pass in the correct
-    # list. Next steps are to filter the list for members who have all their cleanup hours, and add a bathrooms parameter
-    # to the private fields of the task assigner to be used when the assignments are actually sent out. May need to refactor
-    # class to simply build a list of all assignments, and add the bathrooms there.
-
-
-
-    # while not assigner1.finished:
-    #     assignment = assigner1.assign_task()
-    #     print("########### NEW TASK BELOW ##############\n")
-    #     print(assignment[0])
-    #     print(assignment[1])
-    #     print("########### END OF TASK ##########\n\n\n")
+    while not assigner1.finished:
+        assignment = assigner1.assign_task()
+        print("########### NEW TASK BELOW ##############\n")
+        print(assignment[0])
+        print(assignment[1])
+        print("########### END OF TASK ##########\n\n\n")

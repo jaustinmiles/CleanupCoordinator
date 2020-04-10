@@ -63,7 +63,7 @@ class BathroomAssigner:
             key = member.first + member.last
             if key in self.floor_plan and self.floor_plan[key] == location:
                 return member, task
-        raise ValueError("The list provided had no members capable of doing this bathroom task")
+        raise ValueError("The list provided had no members capable of doing this bathroom task: " + task.name)
 
 
 if __name__ == '__main__':
