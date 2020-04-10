@@ -33,8 +33,10 @@ if MODE == "development":
         creds = json.load(f)
     AWS_ACCESS_KEY = creds['access_key_id']
     AWS_SECRET = creds['secret_access_key']
-    REDIS_URL = "redis://h:p86f42403fd815a66f7232f053636777649899392d9700987818b71ebb99312bd@ec2-3-215-116-159.compute-1.amazonaws.com:27779"
-    CELERY_URL = "redis://h:p86f42403fd815a66f7232f053636777649899392d9700987818b71ebb99312bd@ec2-3-215-116-159.compute-1.amazonaws.com:27779"
+    # REDIS_URL = "redis://h:p86f42403fd815a66f7232f053636777649899392d9700987818b71ebb99312bd@ec2-3-215-116-159.compute-1.amazonaws.com:27779"
+    # CELERY_URL = "redis://h:p86f42403fd815a66f7232f053636777649899392d9700987818b71ebb99312bd@ec2-3-215-116-159.compute-1.amazonaws.com:27779"
+    REDIS_URL = 'redis://localhost:6379'
+    CELERY_URL = 'redis://localhost:6379'
 else:
     DOCUMENT_NAME = os.environ['DOCUMENT_NAME']
     app.config['SQLALCHEMY_DATABASE_URI'] = os.environ['DATABASE_URL']
@@ -46,7 +48,7 @@ else:
     REDIS_URL = os.environ['REDIS_URL']
     CELERY_URL = os.environ['CELERY_URL']
 
-reminders = celery.Celery('app')
+# reminders = celery.Celery('app')
 
 
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
@@ -477,6 +479,12 @@ def final_assignments():
     if member_list and hours_list:
         assigner = get_assigner(member_list, hours_list)
         successful_assignment = True
+        try:
+            assignments += assigner.assign_bathrooms()
+        except ValueError as e:
+            flash("Bathroom assignment failed. Please make sure 'bathroom' is in the name of the task and only used to "
+                  + "identify a bathroom on a floor. Also, ensure the floor plan in the Google Drive document is correct"
+                  )
         while not assigner.finished:
             try:
                 pair = assigner.assign_task()
@@ -716,6 +724,9 @@ def login():
     :return:  template for index or next request
     """
     from utils.components import LoginForm
+    # import modules.ReminderHandler as r
+    # print(r.add.apply_async(args=(1, 2), countdown=3))
+
     form = LoginForm()
     if form.validate_on_submit():
         current_user = User.query.filter_by(email=form.email.data).first()
@@ -897,7 +908,8 @@ def download_submissions():
 
 
 def celery():
-    celery_local = Celery(app.import_name, CELERY_URL)
+    celery_local = Celery(app.import_name, broker=CELERY_URL)
+    print(app.import_name)
     # noinspection PyPep8Naming
     celery_local.conf.update(app.config)
     TaskBase = celery_local.Task
@@ -913,6 +925,7 @@ def celery():
     return celery_local
 
 cel = celery()
+
 
 # db.create_all()
 if not User.query.filter_by(email='house.gtdeltachi@gmail.com').first():

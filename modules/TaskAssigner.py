@@ -47,24 +47,27 @@ class Assigner:
 
     def assign_bathrooms(self):
         bathroom_assigner = BathroomAssigner()
-        bathrooms = []
-        indices_to_remove = []
-        for i, task in enumerate(self.sorted_tasks):
+        bathroom_tasks = []
+        for i in range(len(self.sorted_tasks) - 1, -1, -1):
+            task = self.sorted_tasks[i]
             if 'bathroom' in task.name.lower() and 'servery' not in task.name.lower():
-                pair = bathroom_assigner.assign_bathroom(task, self.filtered_members)
-                if pair is None:
-                    print(task)
-                    raise AssertionError("There was no one to assign this bathroom task, or the algorithm failed")
-                bathrooms.append(pair)
-                pair[0].assigned = True
-                indices_to_remove.append(i)
-        for i in range(len(indices_to_remove) - 1, -1, -1):
-            del self.sorted_tasks[indices_to_remove[i]]
-        # TODO: fix result of member not being deleted due to shallow copy of object
-        for i in range(len(self.filtered_members) - 1, -1, -1):
-            if self.filtered_members[i].assigned:
-                del self.filtered_members[i]
-        return bathrooms
+                bathroom_tasks.append(task)
+                del self.sorted_tasks[i]
+        # if there were no bathrooms
+        if not len(bathroom_tasks):
+            return []
+        results = []
+        for task in bathroom_tasks:
+            pair = bathroom_assigner.assign_bathroom(task, self.filtered_members)
+            if pair is None:
+                raise ValueError("There was an issue processing the bathroom tasks. Bathroom assigner found no bathroom"
+                                 + "id.")
+            results.append(pair)
+        results[0][0].assigned = True
+        self.filtered_members = filter_members(self.filtered_members)
+        # self.sorted_tasks = sorted_tasks1
+        # self.filtered_members = member_list_final
+        return results
 
 
 def get_assigner(member_list: list, task_list: list) -> Assigner:
@@ -124,20 +127,7 @@ if __name__ == '__main__':
     # list. Next steps are to filter the list for members who have all their cleanup hours, and add a bathrooms parameter
     # to the private fields of the task assigner to be used when the assignments are actually sent out. May need to refactor
     # class to simply build a list of all assignments, and add the bathrooms there.
-    bathroom_assigner = BathroomAssigner()
-    bathroom_tasks = []
-    for i in range(len(sorted_tasks1) -1, -1, -1):
-        task = sorted_tasks1[i]
-        if 'bathroom' in task.name.lower() and 'servery' not in task.name.lower():
-            bathroom_tasks.append(task)
-            del sorted_tasks1[i]
-    filtered = filter_members(member_list1)
-    results = []
-    for task in bathroom_tasks:
-        results.append(bathroom_assigner.assign_bathroom(task, filtered))
-    results[0][0].assigned = True
-    assigner1 = get_assigner(member_list1, sorted_tasks1)
-    print(results)
+
 
 
     # while not assigner1.finished:
