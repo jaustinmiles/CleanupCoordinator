@@ -125,12 +125,13 @@ def filter_members(member_list) -> list:
 if __name__ == '__main__':
     member_list1 = MemberGenerator.generate_members()
     sorted_tasks1 = CleanupHourScheduler.schedule_hours()
-    assigner1 = get_assigner(member_list1, sorted_tasks1)
-    bathrooms = assigner1.assign_bathrooms()
-
-    while not assigner1.finished:
-        assignment = assigner1.assign_task()
-        print("########### NEW TASK BELOW ##############\n")
-        print(assignment[0])
-        print(assignment[1])
-        print("########### END OF TASK ##########\n\n\n")
+    print(filter_members(member_list1))
+    # assigner1 = get_assigner(member_list1, sorted_tasks1)
+    # bathrooms = assigner1.assign_bathrooms()
+    #
+    # while not assigner1.finished:
+    #     assignment = assigner1.assign_task()
+    #     print("########### NEW TASK BELOW ##############\n")
+    #     print(assignment[0])
+    #     print(assignment[1])
+    #     print("########### END OF TASK ##########\n\n\n")

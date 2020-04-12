@@ -1,7 +1,9 @@
 import json
 import os
+from datetime import datetime
 from os.path import isfile, join, isdir
 
+import arrow
 import boto3
 import celery
 from celery import Celery
@@ -9,6 +11,7 @@ from flask import Flask, render_template, redirect, url_for, request, flash, cur
 from flask_login import UserMixin, LoginManager, login_required, login_user, logout_user
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
+from twilio.rest import Client
 from twilio.twiml.messaging_response import MessagingResponse
 from werkzeug.security import generate_password_hash, check_password_hash
 
@@ -908,6 +911,7 @@ def download_submissions():
     flash("All files from AWS were downloaded correctly. Proceed to review")
     return redirect(url_for("index"))
 
+os.environ.setdefault('FORKED_BY_MULTIPROCESSING', '1')
 
 def celery():
     celery_local = Celery(app.import_name, broker=CELERY_URL)
@@ -927,6 +931,24 @@ def celery():
     return celery_local
 
 cel = celery()
+
+#TODO: The following contains logic for implementing the reminders along with arrow example text. I don't want this
+# in the main file but it looks like it's forcing me too. Will need additional research into this. Also, the library
+# seems to be sending multiple texts, will need to look into this too.
+
+
+@cel.task(name='app.send_sms_reminder')
+def send_sms_reminder():
+    client = Client(TWILIO_ACCOUNT, TWILIO_TOKEN)
+    phone = "+14702020929"
+    body = "the reminder system is working!"
+    to = "+14702637816"
+    client.messages.create(to, from_=phone, body=body)
+
+now = arrow.get(datetime.now())
+task_time = arrow.get('2020-04-11 23:15:00', 'YYYY-MM-DD HH:mm:ss')
+until = task_time - now
+send_sms_reminder.apply_async(countdown=until.seconds)
 
 
 # db.create_all()

@@ -3,7 +3,7 @@ from twilio.rest import Client
 from app import cel
 
 
-@cel.task()
+@cel.task(name='app.send_sms_reminder')
 def send_sms_reminder():
     from app import TWILIO_ACCOUNT, TWILIO_TOKEN
     client = Client(TWILIO_ACCOUNT, TWILIO_TOKEN)
