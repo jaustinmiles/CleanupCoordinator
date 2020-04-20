@@ -71,8 +71,6 @@ class Assigner:
             results.append(pair)
         results[0][0].assigned = True
         self.filtered_members = filter_members(self.filtered_members)
-        # self.sorted_tasks = sorted_tasks1
-        # self.filtered_members = member_list_final
         return results
 
 
@@ -98,8 +96,13 @@ def initialize_assigner(member_list, task_list) -> Assigner:
     :param task_list: list of cleanup hours from CleanupHourScheduler
     :return: the assigner
     """
-    partial_filtered_members = filter_members(member_list)
+    from app import MAX_HOURS
+    partial_filtered_no_hours = filter_members(member_list)
+    partial_filtered_members = [member for member in partial_filtered_no_hours if member.hours < MAX_HOURS]
     sorted_tasks = sorted(task_list, key=lambda x: x.difficulty)
+    if len(partial_filtered_members) < len(sorted_tasks):
+        raise ValueError(f"There are not enough members to complete the assigned tasks. There are {len(sorted_tasks)}"
+                         + f" tasks and {len(partial_filtered_members)} eligible members")
     filtered_members = []
     for i in range(len(sorted_tasks)):
         filtered_members.append(partial_filtered_members[i])

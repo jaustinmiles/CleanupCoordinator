@@ -15,7 +15,6 @@ from twilio.rest import Client
 from twilio.twiml.messaging_response import MessagingResponse
 from werkzeug.security import generate_password_hash, check_password_hash
 
-# TODO: fix weird result of images from last submission loading
 # TODO: handle logging in case of database or aws failure
 # TODO: fix skip handling if hours >= 4
 # Initial setup for the Flask app and migration capabilities of the database, along with the instantiation
@@ -52,7 +51,8 @@ else:
     CELERY_URL = os.environ['CELERY_URL']
 
 # reminders = celery.Celery('app')
-
+NUM_SKIPS = 3
+MAX_HOURS = 4
 
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['SECRET_KEY'] = 'mysecretkey'
@@ -480,7 +480,11 @@ def final_assignments():
     assignments = []
     # try to create assignments, otherwise, set assignments to empty so that pressing the send_texts button is safe
     if member_list and hours_list:
-        assigner = get_assigner(member_list, hours_list)
+        try:
+            assigner = get_assigner(member_list, hours_list)
+        except ValueError as e:
+            flash(str(e))
+            return redirect(url_for("index"))
         successful_assignment = True
         # handle bathrooms first, if none, an empty list should be returned, so there should be no exception
         try:
@@ -490,12 +494,14 @@ def final_assignments():
                   + " used to identify a bathroom on a floor. Also, ensure the floor plan in the Google Drive"
                   + " document is correct.")
             flash(str(e))
+            return redirect(url_for('index'))
+        # Now move on to other assignments
         while not assigner.finished:
             try:
                 pair = assigner.assign_task()
                 assignments.append(pair)
             except Exception as e:
-                print(e)
+                flash(str(e))
                 print('There was an error with assigning tasks. Make sure both lists are valid')
                 successful_assignment = False
                 break
@@ -612,7 +618,7 @@ def reply():
                      "cleanup-coordinator.herokuapp.com/submit")
 
     elif 'skip' in body.lower():
-        if member.skips >= 3:
+        if member.skips >= NUM_SKIPS:
             resp.message("Sorry, but it looks like you've already used both of your skips, so you've been confirmed."
                          + " If this is incorrect, contact the housing manager.")
             assign.response = 'Confirm'
@@ -685,7 +691,8 @@ def delete():
                 for a_dir in dirs:
                     rmtree(a_dir)
                 all_uploads = os.path.join(current_app.root_path, "static/all_uploads")
-                rmtree(all_uploads)
+                if os.path.exists(all_uploads):
+                    rmtree(all_uploads)
                 os.mkdir(all_uploads)
                 # contents = os.listdir(all_uploads)
                 # files = [os.path.join(all_uploads, content) for content in contents]
@@ -933,7 +940,7 @@ def celery():
 cel = celery()
 
 #TODO: The following contains logic for implementing the reminders along with arrow example text. I don't want this
-# in the main file but it looks like it's forcing me too. Will need additional research into this. Also, the library
+# in the main file but it looks like it's forcing me to. Will need additional research into this. Also, the library
 # seems to be sending multiple texts, will need to look into this too.
 
 
@@ -945,10 +952,10 @@ def send_sms_reminder():
     to = "+14702637816"
     client.messages.create(to, from_=phone, body=body)
 
-now = arrow.get(datetime.now())
-task_time = arrow.get('2020-04-11 23:15:00', 'YYYY-MM-DD HH:mm:ss')
-until = task_time - now
-send_sms_reminder.apply_async(countdown=until.seconds)
+# now = arrow.get(datetime.now())
+# task_time = arrow.get('2020-04-11 23:17:00', 'YYYY-MM-DD HH:mm:ss')
+# until = task_time - now
+# send_sms_reminder.apply_async(countdown=until.seconds)
 
 
 # db.create_all()

@@ -37,6 +37,10 @@ class BathroomAssigner:
             name_first = member_row[FIRST_COL].strip()
             name_last = member_row[LAST_COL].strip()
             member = Member.query.filter_by(first=name_first, last=name_last).first()
+            if member is None:
+                raise ValueError("Member " + name_first + " " + name_last + " is in the floor plan but not in the"
+                                                                            + " members list. Please remove him from "
+                                                                              "the floor plan or add to the list.")
             bathroom = member_row[BATHROOM_COL].strip()
             members[member.first + member.last] = bathroom
         return members
