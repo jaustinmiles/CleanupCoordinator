@@ -616,6 +616,9 @@ def reply():
         assign.response = 'Confirm'
         resp.message("Thank you for your confirmation. Submit your completed hour at "
                      "cleanup-coordinator.herokuapp.com/submit")
+        tid = assign.task_id
+        task = CleanupHour.query.get(tid)
+        send_sms_reminder(member, task)
 
     elif 'skip' in body.lower():
         if member.skips >= NUM_SKIPS:
@@ -742,6 +745,13 @@ def login():
     form = LoginForm()
     if form.validate_on_submit():
         current_user = User.query.filter_by(email=form.email.data).first()
+
+        # TODO: Remove the following and put in reply() method before launching for production
+        mem = Member.query.all()[0]
+        task = CleanupHour.query.all()[0]
+        schedule_reminder(mem, task)
+
+
         if current_user is not None and current_user.check_password(form.password.data):
             login_user(current_user)
             flash(f"Welcome, {current_user.username}")
@@ -944,12 +954,18 @@ cel = celery()
 # seems to be sending multiple texts, will need to look into this too.
 
 
+def schedule_reminder(member: Member, task: CleanupHour):
+    from modules.ReminderHandler import convert_to_seconds, name_to_utc
+    a = name_to_utc(task.day, task.due_time)
+    countdown = convert_to_seconds(a)
+    send_sms_reminder.apply_async([member.phone, task.name], countdown=countdown)
+
 @cel.task(name='app.send_sms_reminder')
-def send_sms_reminder():
+def send_sms_reminder(member_phone, task_name):
     client = Client(TWILIO_ACCOUNT, TWILIO_TOKEN)
     phone = "+14702020929"
-    body = "the reminder system is working!"
-    to = "+14702637816"
+    body = f"This is a friendly reminder that your cleanup hour, {task_name}, is due in 5 hours."
+    to = member_phone
     client.messages.create(to, from_=phone, body=body)
 
 # now = arrow.get(datetime.now())

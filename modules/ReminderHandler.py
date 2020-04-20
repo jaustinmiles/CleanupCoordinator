@@ -1,16 +1,45 @@
-import celery
-import os
+from datetime import datetime
 
-from app import cel
-
-# reminders.conf.update(BROKER_URL=os.environ['REDIS_URL'],
-#                       CELERY_RESULT_BACKEND=os.environ['REDIS_URL'])
+import arrow
+from arrow import Arrow
 
 
-@cel.task
-def add(x,y):
-    print(x + y)
-    return x + y
+def convert_to_seconds(a: Arrow):
+    now = arrow.get(datetime.now())
+    until = a - now
+    return until.seconds
 
 
+def name_to_utc(day: str, time: str):
+    num = convert_day_to_num(day)
+    now = arrow.get(datetime.now())
+    shift = num - now.weekday()
+    a = now.shift(days=+shift)
+    s = a.format('MM:DD:YYYY')
+    s = s + " " +time
+    final = arrow.get(s, 'MM:DD:YYYY HH:mm').shift(hours=-5)
+    return final
 
+
+def convert_day_to_num(day):
+    if day == "Monday":
+        num = 0
+    elif day == "Tuesday":
+        num = 1
+    elif day == "Wednesday":
+        num = 2
+    elif day == "Thursday":
+        num = 3
+    elif day == "Friday":
+        num = 4
+    elif day == "Saturday":
+        num = 5
+    elif day == "Sunday":
+        num = 6
+    else:
+        num = 6
+    return num
+
+
+if __name__ == '__main__':
+    name_to_utc("Friday", "10:00")
