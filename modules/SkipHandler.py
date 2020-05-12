@@ -1,6 +1,6 @@
 from modules import TextClient
 from app import Member, CleanupHour, db, Assignment
-
+from modules.BathroomAssigner import BathroomAssigner
 
 """
 Main interface for handling a skip response. The main steps of the process are retrieving the member
@@ -21,7 +21,12 @@ def reassign(phone, phone_no_1):
     :param phone_no_1:
     """
     task = find_task(phone, phone_no_1)
-    member = get_member_object()
+    member = None
+    if 'bathroom' in task.name.lower() and 'servery' not in task.name.lower():
+        ba = BathroomAssigner()
+        member = ba.reassign_bathroom(task)
+    if member is None:
+        member = get_member_object()
     text_client = TextClient.initialize_text_assigner()
     phone = member.phone
     phone_fixed = '+1' + ''.join([char for char in phone if char != '-'])

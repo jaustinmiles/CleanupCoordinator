@@ -4,7 +4,7 @@ import gspread
 from oauth2client.service_account import ServiceAccountCredentials
 
 # from app import DOCUMENT_NAME
-from app import CleanupHour, db, Member, basedir, DOCUMENT_NAME
+from app import CleanupHour, db, Member, basedir, DOCUMENT_NAME, MAX_HOURS
 
 BATHROOM_SHEET = 4
 FIRST_COL = 0
@@ -69,7 +69,32 @@ class BathroomAssigner:
                 return member, task
         raise ValueError("The list provided had no members capable of doing this bathroom task: " + task.name)
 
+    def get_members_on_floor(self, task: CleanupHour):
+        if '2e' in task.name.lower():
+            location = '2E'
+        elif '2w' in task.name.lower():
+            location = '2W'
+        elif '3w' in task.name.lower():
+            location = '3W'
+        elif '3e' in task.name.lower():
+            location = '3E'
+        else:
+            return None
+        floor = [mem for mem, bath in self.floor_plan.items() if bath.lower() == location.lower()]
+        all_mems = Member.query.all()
+        mem: Member
+        final_mems = [mem for mem in all_mems if mem.first + mem.last in floor]
+        return final_mems
+
+    def reassign_bathroom(self, task):
+        members = self.get_members_on_floor(task)
+        members = [m for m in members if not m.assigned and m.hours < MAX_HOURS]
+        if len(members):
+            return members[0]
+        else:
+            return None
 
 if __name__ == '__main__':
     assigner = BathroomAssigner()
-    print(assigner.floor_plan)
+    # task = CleanupHour('Bathroom 3W', 0, "Monday", "17:00", 1, 2, "")
+    # print(assigner.get_members_on_floor(task))

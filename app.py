@@ -52,7 +52,7 @@ else:
 
 # reminders = celery.Celery('app')
 NUM_SKIPS = 3
-MAX_HOURS = 4
+MAX_HOURS = 5
 
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['SECRET_KEY'] = 'mysecretkey'
@@ -613,12 +613,15 @@ def reply():
     from modules import SkipHandler
     member = Member.query.get(assign.member_id)
     if 'confirm' in body.lower():
+        tid = assign.task_id
+        task = CleanupHour.query.get(tid)
         assign.response = 'Confirm'
         resp.message("Thank you for your confirmation. Submit your completed hour at "
                      "cleanup-coordinator.herokuapp.com/submit")
-        tid = assign.task_id
-        task = CleanupHour.query.get(tid)
-        send_sms_reminder(member, task)
+        # mem = Member.query.all()[0]
+        # task = CleanupHour.query.all()[0]
+        schedule_reminder(member, task)
+        # send_sms_reminder(member, task)
 
     elif 'skip' in body.lower():
         if member.skips >= NUM_SKIPS:
@@ -747,9 +750,7 @@ def login():
         current_user = User.query.filter_by(email=form.email.data).first()
 
         # TODO: Remove the following and put in reply() method before launching for production
-        mem = Member.query.all()[0]
-        task = CleanupHour.query.all()[0]
-        schedule_reminder(mem, task)
+
 
 
         if current_user is not None and current_user.check_password(form.password.data):
@@ -959,6 +960,7 @@ def schedule_reminder(member: Member, task: CleanupHour):
     a = name_to_utc(task.day, task.due_time)
     countdown = convert_to_seconds(a)
     send_sms_reminder.apply_async([member.phone, task.name], countdown=countdown)
+
 
 @cel.task(name='app.send_sms_reminder')
 def send_sms_reminder(member_phone, task_name):

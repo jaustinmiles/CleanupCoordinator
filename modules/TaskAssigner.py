@@ -59,6 +59,8 @@ class Assigner:
             if 'bathroom' in task.name.lower() and 'servery' not in task.name.lower():
                 bathroom_tasks.append(task)
                 del self.sorted_tasks[i]
+        if not len(self.sorted_tasks):
+            self.finished = True
         # if there were no bathrooms
         if not len(bathroom_tasks):
             return []
