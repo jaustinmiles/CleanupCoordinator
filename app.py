@@ -48,9 +48,9 @@ else:
     AWS_SECRET = os.environ['AWS_SECRET_ACCESS_KEY']
     s3 = S3Connection(os.environ['AWS_ACCESS_KEY_ID'], os.environ['AWS_SECRET_ACCESS_KEY'])
     REDIS_URL = os.environ['REDIS_URL']
-    CELERY_URL = os.environ['CELERY_URL']
-    app.conf.update(BROKER_URL=os.environ['REDIS_URL'],
-                    CELERY_RESULT_BACKEND=os.environ['REDIS_URL'])
+    CELERY_URL = os.environ['REDIS_URL']
+    # app.conf.update(BROKER_URL=os.environ['REDIS_URL'],
+    #                 CELERY_RESULT_BACKEND=os.environ['REDIS_URL'])
 
 # reminders = celery.Celery('app')
 NUM_SKIPS = 3
