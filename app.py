@@ -49,8 +49,6 @@ else:
     s3 = S3Connection(os.environ['AWS_ACCESS_KEY_ID'], os.environ['AWS_SECRET_ACCESS_KEY'])
     REDIS_URL = os.environ['REDIS_URL']
     CELERY_URL = os.environ['REDIS_URL']
-    # app.conf.update(BROKER_URL=os.environ['REDIS_URL'],
-    #                 CELERY_RESULT_BACKEND=os.environ['REDIS_URL'])
 
 # reminders = celery.Celery('app')
 NUM_SKIPS = 3
@@ -951,6 +949,9 @@ def celery():
     return celery_local
 
 cel = celery()
+if MODE == "production":
+    cel.conf.update(BROKER_URL=os.environ['REDIS_URL'],
+                    CELERY_RESULT_BACKEND=os.environ['REDIS_URL'])
 
 #TODO: The following contains logic for implementing the reminders along with arrow example text. I don't want this
 # in the main file but it looks like it's forcing me to. Will need additional research into this. Also, the library
