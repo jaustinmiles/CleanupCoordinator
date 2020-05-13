@@ -1,11 +1,8 @@
 import json
 import os
-from datetime import datetime
 from os.path import isfile, join, isdir
 
-import arrow
 import boto3
-import celery
 from celery import Celery
 from flask import Flask, render_template, redirect, url_for, request, flash, current_app
 from flask_login import UserMixin, LoginManager, login_required, login_user, logout_user
@@ -30,13 +27,11 @@ if MODE == "development":
     DOCUMENT_NAME = 'cleanup_sheet_test'
     app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + os.path.join(basedir, 'data.sqlite')
     TWILIO_ACCOUNT = open(os.path.join(basedir, "modules", "twilio_account.txt")).readline().strip()
-    TWILIO_TOKEN = open(os.path.join(basedir, "modules","twilio_token.txt")).readline().strip()
+    TWILIO_TOKEN = open(os.path.join(basedir, "modules", "twilio_token.txt")).readline().strip()
     with open(os.path.join(basedir, 'aws-creds.json')) as f:
         creds = json.load(f)
     AWS_ACCESS_KEY = creds['access_key_id']
     AWS_SECRET = creds['secret_access_key']
-    # REDIS_URL = "redis://h:p86f42403fd815a66f7232f053636777649899392d9700987818b71ebb99312bd@ec2-3-215-116-159.compute-1.amazonaws.com:27779"
-    # CELERY_URL = "redis://h:p86f42403fd815a66f7232f053636777649899392d9700987818b71ebb99312bd@ec2-3-215-116-159.compute-1.amazonaws.com:27779"
     REDIS_URL = 'redis://localhost:6379'
     CELERY_URL = 'redis://localhost:6379'
 else:
@@ -58,7 +53,6 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['SECRET_KEY'] = 'mysecretkey'
 app.config['UPLOAD_FOLDER'] = os.path.join(basedir, 'static', 'all_uploads')
 
-
 db = SQLAlchemy(app)
 Migrate(app, db)
 
@@ -72,7 +66,6 @@ login_manager.login_view = 'login'
 
 
 class Member(db.Model):
-
     id = db.Column(db.Integer, primary_key=True)
     first = db.Column(db.Text)
     last = db.Column(db.Text)
@@ -139,7 +132,6 @@ class Member(db.Model):
 
 
 class CleanupHour(db.Model):
-
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.Text)
     task_id = db.Column(db.Integer)
@@ -178,7 +170,6 @@ class CleanupHour(db.Model):
 
 
 class Assignment(db.Model):
-
     id = db.Column(db.Integer, primary_key=True)
     member_id = db.Column(db.Integer, db.ForeignKey('member.id'))
     task_id = db.Column(db.Integer, db.ForeignKey('cleanup_hour.id'))
@@ -209,7 +200,6 @@ def load_user(user_id):
 
 
 class User(db.Model, UserMixin):
-
     id = db.Column(db.Integer, primary_key=True)
     email = db.Column(db.String(64), unique=True, index=True)
     username = db.Column(db.String(64), unique=True, index=True)
@@ -238,7 +228,6 @@ class User(db.Model, UserMixin):
 
 
 class Submission(db.Model):
-
     id = db.Column(db.Integer, primary_key=True)
     dir_name = db.Column(db.String, index=True, unique=True)
     reviewed = db.Column(db.Boolean)
@@ -748,11 +737,6 @@ def login():
     form = LoginForm()
     if form.validate_on_submit():
         current_user = User.query.filter_by(email=form.email.data).first()
-
-        # TODO: Remove the following and put in reply() method before launching for production
-
-
-
         if current_user is not None and current_user.check_password(form.password.data):
             login_user(current_user)
             flash(f"Welcome, {current_user.username}")
@@ -838,25 +822,8 @@ def review(identifier):
             upload_folder = join(os.path.abspath(os.path.dirname(__file__)), 'static', 'uploaded_hours')
             if not os.path.exists(upload_folder):
                 os.mkdir(upload_folder)
-            if not os.path.exists(upload_path):
-                os.mkdir(upload_path)
-            bucket_name, client = get_boto3_client()
-            paginator = client.get_paginator('list_objects')
-            path = sub.dir_name
-            prefix = ''
-            for char in path:
-                if char != "\\":
-                    prefix += char
-                else:
-                    prefix += "/"
-            operation_params = {'Bucket': bucket_name, 'Prefix': prefix}
-            page_iterator = paginator.paginate(**operation_params)
-            save_as = os.path.join(upload_path, 'successful_save')
-            for page in page_iterator:
-                for i, file in enumerate(page['Contents']):
-                    to_save = save_as + str(i) + '.jpg'
-                    client.download_file(bucket_name, file['Key'], to_save)
-        uploads = [(sub.dir_name + '\\' + f) for f in os.listdir(upload_path) if isfile(join(upload_path, f))]
+            handle_s3(sub, upload_path)
+        uploads = [(sub.dir_name + '\\' + fi) for fi in os.listdir(upload_path) if isfile(join(upload_path, fi))]
         enumerated = range(len(uploads))
     except Exception as e:
         print(e)
@@ -864,6 +831,27 @@ def review(identifier):
               'Ask the Member to resubmit these photos or examine the folder manually.' + str(e))
         return redirect(url_for('index'))
     return render_template('review.html', uploads=uploads, member=member, task=task, enumerated=enumerated, sub=sub)
+
+
+def handle_s3(sub, upload_path):
+    if not os.path.exists(upload_path):
+        os.mkdir(upload_path)
+    bucket_name, client = get_boto3_client()
+    paginator = client.get_paginator('list_objects')
+    path = sub.dir_name
+    prefix = ''
+    for char in path:
+        if char != "\\":
+            prefix += char
+        else:
+            prefix += "/"
+    operation_params = {'Bucket': bucket_name, 'Prefix': prefix}
+    page_iterator = paginator.paginate(**operation_params)
+    save_as = os.path.join(upload_path, 'successful_save')
+    for page in page_iterator:
+        for i, file in enumerate(page['Contents']):
+            to_save = save_as + str(i) + '.jpg'
+            client.download_file(bucket_name, file['Key'], to_save)
 
 
 @app.route('/publish', methods=['GET', 'POST'])
@@ -905,31 +893,16 @@ def download_submissions():
     for sub in subs:
         try:
             upload_path = join(os.path.abspath(os.path.dirname(__file__)), 'static', sub.dir_name)
-            if not os.path.exists(upload_path):
-                os.mkdir(upload_path)
-            bucket_name, client = get_boto3_client()
-            paginator = client.get_paginator('list_objects')
-            path = sub.dir_name
-            prefix = ''
-            for char in path:
-                if char != "\\":
-                    prefix += char
-                else:
-                    prefix += "/"
-            operation_params = {'Bucket': bucket_name, 'Prefix': prefix}
-            page_iterator = paginator.paginate(**operation_params)
-            save_as = os.path.join(upload_path, 'successful_save')
-            for page in page_iterator:
-                for i, file in enumerate(page['Contents']):
-                    to_save = save_as + str(i) + '.jpg'
-                    client.download_file(bucket_name, file['Key'], to_save)
+            handle_s3(sub, upload_path)
         except Exception as e:
             print(e)
             flash(f"Some files were not downloaded properly. These files correspond to upload folder {sub.dir_name}")
     flash("All files from AWS were downloaded correctly. Proceed to review")
     return redirect(url_for("index"))
 
+
 os.environ.setdefault('FORKED_BY_MULTIPROCESSING', '1')
+
 
 def celery():
     celery_local = Celery(app.import_name, broker=CELERY_URL)
@@ -937,6 +910,7 @@ def celery():
     # noinspection PyPep8Naming
     celery_local.conf.update(app.config)
     TaskBase = celery_local.Task
+
     class ContextTask(TaskBase):
         abstract = True
 
@@ -948,15 +922,12 @@ def celery():
     celery_local.Task = ContextTask
     return celery_local
 
+
 cel = celery()
 if MODE == "production":
     cel.conf.update(BROKER_URL=os.environ['REDIS_URL'],
                     CELERY_RESULT_BACKEND=os.environ['REDIS_URL'],
                     CELERY_TASK_SERIALIZER='json')
-
-#TODO: The following contains logic for implementing the reminders along with arrow example text. I don't want this
-# in the main file but it looks like it's forcing me to. Will need additional research into this. Also, the library
-# seems to be sending multiple texts, will need to look into this too.
 
 
 def schedule_reminder(member: Member, task: CleanupHour):
@@ -973,11 +944,6 @@ def send_sms_reminder(member_phone, task_name):
     body = f"This is a friendly reminder that your cleanup hour, {task_name}, is due in 5 hours."
     to = member_phone
     client.messages.create(to, from_=phone, body=body)
-
-# now = arrow.get(datetime.now())
-# task_time = arrow.get('2020-04-11 23:17:00', 'YYYY-MM-DD HH:mm:ss')
-# until = task_time - now
-# send_sms_reminder.apply_async(countdown=until.seconds)
 
 
 # db.create_all()

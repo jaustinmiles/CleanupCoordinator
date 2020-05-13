@@ -1,15 +1,24 @@
-import os
-
-import gspread
-from oauth2client.service_account import ServiceAccountCredentials
-
-# from app import DOCUMENT_NAME
-from app import CleanupHour, db, Member, basedir, DOCUMENT_NAME, MAX_HOURS
+from app import CleanupHour, Member, MAX_HOURS
+from modules.MemberGenerator import get_google_creds
 
 BATHROOM_SHEET = 4
 FIRST_COL = 0
 LAST_COL = 1
 BATHROOM_COL = 2
+
+
+def get_bathroom_loc(task: CleanupHour):
+    if '2e' in task.name.lower():
+        location = '2E'
+    elif '2w' in task.name.lower():
+        location = '2W'
+    elif '3w' in task.name.lower():
+        location = '3W'
+    elif '3e' in task.name.lower():
+        location = '3E'
+    else:
+        return None
+    return location
 
 
 class BathroomAssigner:
@@ -24,13 +33,7 @@ class BathroomAssigner:
         the member lives on
         :return: the dictionary of mappings
         """
-        scope = ['https://spreadsheets.google.com/feeds', 'https://www.googleapis.com/auth/drive']
-        creds = ServiceAccountCredentials.from_json_keyfile_name(os.path.join(basedir, 'client_secret.json'), scope)
-        client = gspread.authorize(creds)
-        sheet = client.open(DOCUMENT_NAME).get_worksheet(BATHROOM_SHEET)
-        all_values = sheet.get_all_values()
-        col_one = sheet.col_values(1)
-        max_row = len(col_one)
+        all_values, max_row = get_google_creds()
         members = {}
         for i in range(1, max_row):
             member_row = all_values[i]
@@ -53,15 +56,8 @@ class BathroomAssigner:
         :param filtered_members: all eligible members
         :return: member, task pairing for the cleanup hour
         """
-        if '2e' in task.name.lower():
-            location = '2E'
-        elif '2w' in task.name.lower():
-            location = '2W'
-        elif '3w' in task.name.lower():
-            location = '3W'
-        elif '3e' in task.name.lower():
-            location = '3E'
-        else:
+        location = get_bathroom_loc(task)
+        if location is None:
             return None
         for member in filtered_members:
             key = member.first + member.last
@@ -70,15 +66,8 @@ class BathroomAssigner:
         raise ValueError("The list provided had no members capable of doing this bathroom task: " + task.name)
 
     def get_members_on_floor(self, task: CleanupHour):
-        if '2e' in task.name.lower():
-            location = '2E'
-        elif '2w' in task.name.lower():
-            location = '2W'
-        elif '3w' in task.name.lower():
-            location = '3W'
-        elif '3e' in task.name.lower():
-            location = '3E'
-        else:
+        location = get_bathroom_loc(task)
+        if location is None:
             return None
         floor = [mem for mem, bath in self.floor_plan.items() if bath.lower() == location.lower()]
         all_mems = Member.query.all()
@@ -93,6 +82,7 @@ class BathroomAssigner:
             return members[0]
         else:
             return None
+
 
 if __name__ == '__main__':
     assigner = BathroomAssigner()

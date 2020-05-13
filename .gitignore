@@ -1,4 +1,4 @@
-#modules/client_secret.json
+modules/client_secret.json
 .idea
 *.xml
 __pycache__
@@ -11,4 +11,4 @@ setupdatabase.py
 venv
 modules/twilio_account.txt
 modules/twilio_token.txt
-#client_secret.json
+client_secret.json

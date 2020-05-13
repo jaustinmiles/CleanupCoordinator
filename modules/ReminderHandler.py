@@ -16,7 +16,7 @@ def name_to_utc(day: str, time: str):
     shift = num - now.weekday()
     a = now.shift(days=+shift)
     s = a.format('MM:DD:YYYY')
-    s = s + " " +time
+    s = s + " " + time
     # the minus 1 is to make it 5 hours behind in EST, which is 1 hour behind in UTC
     final = arrow.get(s, 'MM:DD:YYYY HH:mm').shift(hours=-1)
     return final

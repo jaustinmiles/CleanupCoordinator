@@ -16,13 +16,7 @@ def generate_members() -> list:
 
     hours_dict = generate_hours()
     skips_dict = generate_skips()
-    scope = ['https://spreadsheets.google.com/feeds', 'https://www.googleapis.com/auth/drive']
-    creds = ServiceAccountCredentials.from_json_keyfile_name(os.path.join(basedir, 'client_secret.json'), scope)
-    client = gspread.authorize(creds)
-    sheet = client.open(DOCUMENT_NAME).get_worksheet(2)
-    all_values = sheet.get_all_values()
-    col_one = sheet.col_values(1)
-    max_row = len(col_one)
+    all_values, max_row = get_google_creds()
     members = []
     for i in range(1, max_row):
         member_row = all_values[i]
@@ -47,13 +41,7 @@ def generate_hours() -> dict:
     :rtype: dict
     :return: dict of hours mapping value 'hours' to key 'last name'
     """
-    scope = ['https://spreadsheets.google.com/feeds', 'https://www.googleapis.com/auth/drive']
-    creds = ServiceAccountCredentials.from_json_keyfile_name(os.path.join(basedir, 'client_secret.json'), scope)
-    client = gspread.authorize(creds)
-    sheet = client.open(DOCUMENT_NAME).get_worksheet(3)
-    all_values = sheet.get_all_values()
-    col_one = sheet.col_values(1)
-    max_row = len(col_one)
+    all_values, max_row = get_google_creds()
     hours_dict = {}
     for i in range(1, max_row):
         member_row = all_values[i]
@@ -62,6 +50,15 @@ def generate_hours() -> dict:
 
 
 def generate_skips():
+    all_values, max_row = get_google_creds()
+    skips_dict = {}
+    for i in range(1, max_row):
+        member_row = all_values[i]
+        skips_dict[member_row[0].strip() + member_row[1].strip()] = int(member_row[3])
+    return skips_dict
+
+
+def get_google_creds():
     scope = ['https://spreadsheets.google.com/feeds', 'https://www.googleapis.com/auth/drive']
     creds = ServiceAccountCredentials.from_json_keyfile_name(os.path.join(basedir, 'client_secret.json'), scope)
     client = gspread.authorize(creds)
@@ -69,11 +66,7 @@ def generate_skips():
     all_values = sheet.get_all_values()
     col_one = sheet.col_values(1)
     max_row = len(col_one)
-    skips_dict = {}
-    for i in range(1, max_row):
-        member_row = all_values[i]
-        skips_dict[member_row[0].strip() + member_row[1].strip()] = int(member_row[3])
-    return skips_dict
+    return all_values, max_row
 
 
 if __name__ == '__main__':
