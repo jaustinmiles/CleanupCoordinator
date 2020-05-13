@@ -1,2 +1,2 @@
 web: gunicorn app:app
-celery -A app.cel worker -l info
+worker: celery -A app.cel worker -l info

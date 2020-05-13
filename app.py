@@ -951,7 +951,8 @@ def celery():
 cel = celery()
 if MODE == "production":
     cel.conf.update(BROKER_URL=os.environ['REDIS_URL'],
-                    CELERY_RESULT_BACKEND=os.environ['REDIS_URL'])
+                    CELERY_RESULT_BACKEND=os.environ['REDIS_URL'],
+                    CELERY_TASK_SERIALIZER='json')
 
 #TODO: The following contains logic for implementing the reminders along with arrow example text. I don't want this
 # in the main file but it looks like it's forcing me to. Will need additional research into this. Also, the library
