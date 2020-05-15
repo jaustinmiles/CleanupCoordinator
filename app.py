@@ -19,7 +19,7 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.utils import secure_filename
 from boto.s3.connection import S3Connection
 
-MODE = "production"
+MODE = "development"
 app = Flask(__name__)
 basedir = os.path.abspath(os.path.dirname(__file__))
 
@@ -34,6 +34,7 @@ if MODE == "development":
     AWS_SECRET = creds['secret_access_key']
     REDIS_URL = 'redis://localhost:6379'
     CELERY_URL = 'redis://localhost:6379'
+    CLOUDAMQP_URL = 'amqp://localhost//'
 else:
     DOCUMENT_NAME = os.environ['DOCUMENT_NAME']
     app.config['SQLALCHEMY_DATABASE_URI'] = os.environ['DATABASE_URL']
@@ -44,6 +45,7 @@ else:
     s3 = S3Connection(os.environ['AWS_ACCESS_KEY_ID'], os.environ['AWS_SECRET_ACCESS_KEY'])
     REDIS_URL = os.environ['REDIS_URL']
     CELERY_URL = os.environ['REDIS_URL']
+    CLOUDAMQP_URL = os.environ['CLOUDAMQP_URL']
 
 # reminders = celery.Celery('app')
 NUM_SKIPS = 3
@@ -905,7 +907,7 @@ os.environ.setdefault('FORKED_BY_MULTIPROCESSING', '1')
 
 
 def celery():
-    celery_local = Celery(app.import_name, broker=CELERY_URL)
+    celery_local = Celery(app.import_name, broker=CLOUDAMQP_URL)
     print(app.import_name)
     # noinspection PyPep8Naming
     celery_local.conf.update(app.config)
@@ -925,8 +927,8 @@ def celery():
 
 cel = celery()
 if MODE == "production":
-    cel.conf.update(BROKER_URL=os.environ['REDIS_URL'],
-                    CELERY_RESULT_BACKEND=os.environ['REDIS_URL'],
+    cel.conf.update(BROKER_URL=os.environ['CLOUDAMQP_URL'],
+                    CELERY_RESULT_BACKEND=os.environ['CLOUDAMQP_URL'],
                     CELERY_TASK_SERIALIZER='json')
 
 

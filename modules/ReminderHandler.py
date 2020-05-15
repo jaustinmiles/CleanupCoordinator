@@ -23,19 +23,20 @@ def name_to_utc(day: str, time: str):
 
 
 def convert_day_to_num(day):
-    if day == "Monday":
+    day = day.lower().strip()
+    if day == "monday":
         num = 0
-    elif day == "Tuesday":
+    elif day == "tuesday":
         num = 1
-    elif day == "Wednesday":
+    elif day == "wednesday":
         num = 2
-    elif day == "Thursday":
+    elif day == "thursday":
         num = 3
-    elif day == "Friday":
+    elif day == "friday":
         num = 4
-    elif day == "Saturday":
+    elif day == "saturday":
         num = 5
-    elif day == "Sunday":
+    elif day == "sunday":
         num = 6
     else:
         num = 6

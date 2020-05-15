@@ -33,7 +33,7 @@ class BathroomAssigner:
         the member lives on
         :return: the dictionary of mappings
         """
-        all_values, max_row = get_google_creds()
+        all_values, max_row = get_google_creds(worksheet_num=4)
         members = {}
         for i in range(1, max_row):
             member_row = all_values[i]

@@ -16,7 +16,7 @@ def generate_members() -> list:
 
     hours_dict = generate_hours()
     skips_dict = generate_skips()
-    all_values, max_row = get_google_creds()
+    all_values, max_row = get_google_creds(2)
     members = []
     for i in range(1, max_row):
         member_row = all_values[i]
@@ -41,7 +41,7 @@ def generate_hours() -> dict:
     :rtype: dict
     :return: dict of hours mapping value 'hours' to key 'last name'
     """
-    all_values, max_row = get_google_creds()
+    all_values, max_row = get_google_creds(worksheet_num=3)
     hours_dict = {}
     for i in range(1, max_row):
         member_row = all_values[i]
@@ -50,7 +50,7 @@ def generate_hours() -> dict:
 
 
 def generate_skips():
-    all_values, max_row = get_google_creds()
+    all_values, max_row = get_google_creds(worksheet_num=3)
     skips_dict = {}
     for i in range(1, max_row):
         member_row = all_values[i]
@@ -58,11 +58,11 @@ def generate_skips():
     return skips_dict
 
 
-def get_google_creds():
+def get_google_creds(worksheet_num):
     scope = ['https://spreadsheets.google.com/feeds', 'https://www.googleapis.com/auth/drive']
     creds = ServiceAccountCredentials.from_json_keyfile_name(os.path.join(basedir, 'client_secret.json'), scope)
     client = gspread.authorize(creds)
-    sheet = client.open(DOCUMENT_NAME).get_worksheet(3)
+    sheet = client.open(DOCUMENT_NAME).get_worksheet(worksheet_num)
     all_values = sheet.get_all_values()
     col_one = sheet.col_values(1)
     max_row = len(col_one)
