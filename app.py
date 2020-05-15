@@ -19,7 +19,7 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.utils import secure_filename
 from boto.s3.connection import S3Connection
 
-MODE = "development"
+MODE = "production"
 app = Flask(__name__)
 basedir = os.path.abspath(os.path.dirname(__file__))
 
