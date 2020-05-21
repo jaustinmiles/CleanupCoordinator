@@ -14,6 +14,10 @@ from werkzeug.security import generate_password_hash, check_password_hash
 
 # TODO: handle logging in case of database or aws failure
 # TODO: fix skip handling if hours >= 4
+# TODO: fix issue where if there are two bathroom 3w hours and only two people they get
+# both assigned to the next person
+
+
 # Initial setup for the Flask app and migration capabilities of the database, along with the instantiation
 # of the global variable db
 from werkzeug.utils import secure_filename
@@ -24,7 +28,7 @@ app = Flask(__name__)
 basedir = os.path.abspath(os.path.dirname(__file__))
 
 if MODE == "development":
-    DOCUMENT_NAME = 'cleanup_sheet_test'
+    DOCUMENT_NAME = 'cleanup_sheet'
     app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + os.path.join(basedir, 'data.sqlite')
     TWILIO_ACCOUNT = open(os.path.join(basedir, "modules", "twilio_account.txt")).readline().strip()
     TWILIO_TOKEN = open(os.path.join(basedir, "modules", "twilio_token.txt")).readline().strip()
@@ -478,6 +482,7 @@ def final_assignments():
             return redirect(url_for("index"))
         successful_assignment = True
         # handle bathrooms first, if none, an empty list should be returned, so there should be no exception
+        # TODO: bathroom assignments are not taken out of the list of members, so members are assigned twice.
         try:
             assignments += assigner.assign_bathrooms()
         except ValueError as e:

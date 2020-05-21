@@ -45,7 +45,7 @@ class Assigner:
                 self.finished = True
             return member, task
 
-    def assign_bathrooms(self) -> list:
+    def assign_bathrooms(self) -> (list, list, list):
         """
         This method will only work if the assigner has been instantiated with a list of members already.
         This method must also be called before any regular task assignments or a bathroom may be assigned

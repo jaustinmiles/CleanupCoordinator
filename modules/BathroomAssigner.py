@@ -59,9 +59,11 @@ class BathroomAssigner:
         location = get_bathroom_loc(task)
         if location is None:
             return None
-        for member in filtered_members:
+        for i in range(len(filtered_members) - 1, -1, -1):
+            member = filtered_members[i]
             key = member.first + member.last
             if key in self.floor_plan and self.floor_plan[key] == location:
+                del filtered_members[i]
                 return member, task
         raise ValueError("The list provided had no members capable of doing this bathroom task: " + task.name)
 
