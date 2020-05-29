@@ -616,7 +616,7 @@ def reply():
                      "cleanup-coordinator.herokuapp.com/submit")
         # mem = Member.query.all()[0]
         # task = CleanupHour.query.all()[0]
-        schedule_reminder(member, task)
+        # schedule_reminder(member, task)
         # send_sms_reminder(member, task)
 
     elif 'skip' in body.lower():

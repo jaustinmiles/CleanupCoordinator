@@ -7,7 +7,11 @@ from arrow import Arrow
 def convert_to_seconds(a: Arrow):
     now = arrow.get(datetime.now())
     until = a - now
-    return until.seconds
+    if until.days:
+        s = until.days * 86400 + until.seconds
+    else:
+        s = until.seconds
+    return s
 
 
 def name_to_utc(day: str, time: str):
@@ -44,4 +48,6 @@ def convert_day_to_num(day):
 
 
 if __name__ == '__main__':
-    name_to_utc("Friday", "10:00")
+    a = name_to_utc("Friday", "10:00")
+    seconds = convert_to_seconds(a)
+    print(seconds)
