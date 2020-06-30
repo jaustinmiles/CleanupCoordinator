@@ -1,3 +1,4 @@
+from app import MAX_HOURS
 from modules import MemberGenerator
 from modules import CleanupHourScheduler
 from modules.BathroomAssigner import BathroomAssigner
@@ -123,7 +124,7 @@ def filter_members(member_list) -> list:
     :return: partially sorted members
     """
     sorted_members = sorted(member_list, key=lambda x: x.hours)
-    final_list = [member for member in sorted_members if member.active and not member.assigned]
+    final_list = [member for member in sorted_members if member.active and not member.assigned and member.hours < MAX_HOURS]
     return final_list
 
 

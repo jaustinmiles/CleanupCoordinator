@@ -1,5 +1,5 @@
 from modules import TextClient
-from app import Member, CleanupHour, db, Assignment
+from app import Member, CleanupHour, db, Assignment, MAX_HOURS
 from modules.BathroomAssigner import BathroomAssigner
 
 """
@@ -46,7 +46,7 @@ def get_member_object():
     members = Member.query.all()
     sorted_members = sorted(members, key=lambda x: x.hours)
     for member in sorted_members:
-        if member.active and not member.assigned and member.hours < 4:
+        if member.active and not member.assigned and member.hours < MAX_HOURS:
             return member
     return None
 
