@@ -10,3 +10,4 @@ setupdatabase.py
 venv
 modules/twilio_account.txt
 modules/twilio_token.txt
+utils/__pycache__
