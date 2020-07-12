@@ -23,35 +23,30 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.utils import secure_filename
 from boto.s3.connection import S3Connection
 
-MODE = "production"
 app = Flask(__name__)
 basedir = os.path.abspath(os.path.dirname(__file__))
 
-if MODE == "development":
-    DOCUMENT_NAME = 'cleanup_sheet'
-    app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + os.path.join(basedir, 'data.sqlite')
-    TWILIO_ACCOUNT = open(os.path.join(basedir, "modules", "twilio_account.txt")).readline().strip()
-    TWILIO_TOKEN = open(os.path.join(basedir, "modules", "twilio_token.txt")).readline().strip()
-    with open(os.path.join(basedir, 'aws-creds.json')) as f:
-        creds = json.load(f)
-    AWS_ACCESS_KEY = creds['access_key_id']
-    AWS_SECRET = creds['secret_access_key']
-    REDIS_URL = 'redis://localhost:6379'
-    CELERY_URL = 'redis://localhost:6379'
-    CLOUDAMQP_URL = 'amqp://localhost//'
-else:
-    DOCUMENT_NAME = os.environ['DOCUMENT_NAME']
-    app.config['SQLALCHEMY_DATABASE_URI'] = os.environ['DATABASE_URL']
-    TWILIO_ACCOUNT = os.environ['TWILIO_ACCOUNT']
-    TWILIO_TOKEN = os.environ['TWILIO_TOKEN']
-    AWS_ACCESS_KEY = os.environ['AWS_ACCESS_KEY_ID']
-    AWS_SECRET = os.environ['AWS_SECRET_ACCESS_KEY']
-    s3 = S3Connection(os.environ['AWS_ACCESS_KEY_ID'], os.environ['AWS_SECRET_ACCESS_KEY'])
-    REDIS_URL = os.environ['REDIS_URL']
-    CELERY_URL = os.environ['REDIS_URL']
-    CLOUDAMQP_URL = os.environ['CLOUDAMQP_URL']
+DOCUMENT_NAME = os.environ['DOCUMENT_NAME']
+app.config['SQLALCHEMY_DATABASE_URI'] = os.environ['DATABASE_URL']
+TWILIO_ACCOUNT = os.environ['TWILIO_ACCOUNT']
+TWILIO_TOKEN = os.environ['TWILIO_TOKEN']
+AWS_ACCESS_KEY = os.environ['AWS_ACCESS_KEY_ID']
+AWS_SECRET = os.environ['AWS_SECRET_ACCESS_KEY']
+s3 = S3Connection(os.environ['AWS_ACCESS_KEY_ID'], os.environ['AWS_SECRET_ACCESS_KEY'])
+CELERY_URL = os.environ['CLOUDAMQP_URL']
+CLOUDAMQP_URL = os.environ['CLOUDAMQP_URL']
 
-# reminders = celery.Celery('app')
+DRIVE_TYPE = os.environ['DRIVE_TYPE']
+DRIVE_PROJECT_ID = os.environ['DRIVE_PROJECT_ID']
+DRIVE_PRIVATE_KEY_ID = os.environ['DRIVE_PRIVATE_KEY_ID']
+DRIVE_CLIENT_EMAIL = os.environ['DRIVE_CLIENT_EMAIL']
+DRIVE_PRIVATE_KEY = os.environ['DRIVE_PRIVATE_KEY']
+DRIVE_CLIENT_ID = os.environ['DRIVE_CLIENT_ID']
+DRIVE_AUTH_URI = os.environ['DRIVE_AUTH_URI']
+DRIVE_TOKEN_URI = os.environ['DRIVE_TOKEN_URI']
+DRIVE_AUTH_PROVIDER_CERT = os.environ['DRIVE_AUTH_PROVIDER_CERT']
+DRIVE_CLIENT_CERT = os.environ['DRIVE_CLIENT_CERT']
+
 NUM_SKIPS = 3
 MAX_HOURS = 5
 
@@ -590,6 +585,7 @@ def reply():
     is the one that it will respond to. It will then go through the various cases and log the response.
     If the response is a skip, the skip handler will be called.
     """
+
     body = request.values.get('Body', None)
     number = request.values.get('From', None)
     resp = MessagingResponse()
@@ -614,10 +610,7 @@ def reply():
         assign.response = 'Confirm'
         resp.message("Thank you for your confirmation. Submit your completed hour at "
                      "cleanup-coordinator.herokuapp.com/submit")
-        # mem = Member.query.all()[0]
-        # task = CleanupHour.query.all()[0]
-        # schedule_reminder(member, task)
-        # send_sms_reminder(member, task)
+        schedule_reminder(member, task)
 
     elif 'skip' in body.lower():
         if member.skips >= NUM_SKIPS:
@@ -931,10 +924,10 @@ def celery():
 
 
 cel = celery()
-if MODE == "production":
-    cel.conf.update(BROKER_URL=os.environ['CLOUDAMQP_URL'],
-                    CELERY_RESULT_BACKEND=os.environ['CLOUDAMQP_URL'],
-                    CELERY_TASK_SERIALIZER='json')
+# if MODE == "production":
+# cel.conf.update(BROKER_URL=CLOUDAMQP_URL,
+#                 CELERY_RESULT_BACKEND=CLOUDAMQP_URL,
+#                 CELERY_TASK_SERIALIZER='json')
 
 
 def schedule_reminder(member: Member, task: CleanupHour):
@@ -950,7 +943,8 @@ def send_sms_reminder(member_phone, task_name):
     phone = "+14702020929"
     body = f"This is a friendly reminder that your cleanup hour, {task_name}, is due in 5 hours."
     to = member_phone
-    client.messages.create(to, from_=phone, body=body)
+    phone_fixed = '+1' + str([char for char in to if char != '-'])
+    client.messages.create(phone_fixed, from_=phone, body=body)
 
 
 # db.create_all()

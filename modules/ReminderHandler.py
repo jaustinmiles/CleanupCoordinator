@@ -48,6 +48,7 @@ def convert_day_to_num(day):
 
 
 if __name__ == '__main__':
-    a = name_to_utc("Friday", "10:00")
+    a = name_to_utc("Saturday", "19:00")
+    print(a)
     seconds = convert_to_seconds(a)
     print(seconds)

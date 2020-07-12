@@ -1,6 +1,5 @@
-import gspread
-from oauth2client.service_account import ServiceAccountCredentials
 from app import DOCUMENT_NAME, Member
+from modules.MemberGenerator import get_google_creds
 
 RUNNING_TOTAL_COL = 3
 SKIPS_TOTAL_COL = 4
@@ -12,9 +11,7 @@ def update_hours():
     document_name, updating the 'Running total' worksheet. If the first and last name specified in the
     spreadsheet corresponds to a Member model in the db, the hours are updated in the correct column.
     """
-    scope = ['https://spreadsheets.google.com/feeds', 'https://www.googleapis.com/auth/drive']
-    creds = ServiceAccountCredentials.from_json_keyfile_name('client_secret.json', scope)
-    client = gspread.authorize(creds)
+    client = get_google_creds()
     sheet = client.open(DOCUMENT_NAME).get_worksheet(3)
     all_values = sheet.get_all_values()
     col_one = sheet.col_values(1)
