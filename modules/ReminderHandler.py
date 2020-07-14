@@ -1,4 +1,6 @@
 from datetime import datetime
+from datetime import timezone
+import pytz
 
 import arrow
 from arrow import Arrow
@@ -16,13 +18,18 @@ def convert_to_seconds(a: Arrow):
 
 def name_to_utc(day: str, time: str):
     num = convert_day_to_num(day)
-    now = arrow.get(datetime.now())
-    shift = num - now.weekday()
+    eastern = pytz.timezone('US/Eastern')
+    loc_dt = datetime.now(eastern)
+    now = arrow.get(loc_dt)
+    shift = (num - now.weekday()) % 7
     a = now.shift(days=+shift)
     s = a.format('MM:DD:YYYY')
     s = s + " " + time
-    # the minus 1 is to make it 5 hours behind in EST, which is 1 hour behind in UTC
-    final = arrow.get(s, 'MM:DD:YYYY HH:mm').shift(hours=-1)
+    final = arrow.get(s, 'MM:DD:YYYY HH:mm')
+    # Shift +4 to get UTC
+    final = final.shift(hours=+4)
+    # Shift -5 for the 5 hour reminder window
+    final = final.shift(hours=-5)
     return final
 
 
@@ -43,7 +50,7 @@ def convert_day_to_num(day):
     elif day == "sunday":
         num = 6
     else:
-        num = 6
+        num = 0
     return num
 
 

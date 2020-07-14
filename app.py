@@ -1,4 +1,4 @@
-import json
+from dotenv import load_dotenv
 import os
 from os.path import isfile, join, isdir
 
@@ -22,6 +22,8 @@ from werkzeug.security import generate_password_hash, check_password_hash
 # of the global variable db
 from werkzeug.utils import secure_filename
 from boto.s3.connection import S3Connection
+
+load_dotenv()
 
 app = Flask(__name__)
 basedir = os.path.abspath(os.path.dirname(__file__))
@@ -264,6 +266,7 @@ def index():
     the user is a Member
     :return: html template to render
     """
+    send_sms_reminder.apply_async(["4702637816", "Countdown working"], countdown=120)
     return render_template('index.html')
 
 
@@ -585,6 +588,7 @@ def reply():
     is the one that it will respond to. It will then go through the various cases and log the response.
     If the response is a skip, the skip handler will be called.
     """
+
 
     body = request.values.get('Body', None)
     number = request.values.get('From', None)
