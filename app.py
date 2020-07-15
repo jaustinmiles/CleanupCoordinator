@@ -197,6 +197,33 @@ class Assignment(db.Model):
         self.response = response
 
 
+class Log(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    timestamp = db.Column(db.Text)
+    event_type = db.Column(db.Text)
+    member = db.Column(db.Text)
+    task = db.Column(db.Text)
+    description = db.Column(db.Text)
+    old_value = db.Column(db.Integer)
+    new_value = db.Column(db.Integer)
+    value_type = db.Column(db.Text)
+
+    def __init__(self, timestamp, event_type, member, task, description, old_value, new_value, value_type):
+        self.timestamp = timestamp
+        self.event_type = event_type
+        self.member = member
+        self.task = task
+        self.description = description
+        self.old_value = old_value
+        self.new_value = new_value
+        self.value_type = value_type
+
+    def __str__(self):
+        return f"{self.timestamp}: event type={self.event_type}, user: {self.member}, task: {self.task}, value change: " \
+               f"{self.value_type}, old={self.old_value}, new={self.new_value}. details: {self.description}"
+
+
+
 @login_manager.user_loader
 def load_user(user_id):
     return User.query.get(user_id)
@@ -266,7 +293,6 @@ def index():
     the user is a Member
     :return: html template to render
     """
-    send_sms_reminder.apply_async(["4702637816", "Countdown working"], countdown=120)
     return render_template('index.html')
 
 

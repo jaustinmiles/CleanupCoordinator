@@ -50,7 +50,7 @@ def convert_day_to_num(day):
     elif day == "sunday":
         num = 6
     else:
-        num = 0
+        num = 6
     return num
 
 
