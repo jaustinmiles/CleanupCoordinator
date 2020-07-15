@@ -1,5 +1,5 @@
-from app import CleanupHour, Member, MAX_HOURS
-from modules.MemberGenerator import get_google_creds
+from app import CleanupHour, Member, MAX_HOURS, DOCUMENT_NAME
+from modules.creds.CredentialManager import get_google_creds
 
 BATHROOM_SHEET = 4
 FIRST_COL = 0
@@ -33,7 +33,11 @@ class BathroomAssigner:
         the member lives on
         :return: the dictionary of mappings
         """
-        all_values, max_row = get_google_creds(worksheet_num=4)
+        client = get_google_creds()
+        sheet = client.open(DOCUMENT_NAME).get_worksheet(4)
+        all_values = sheet.get_all_values()
+        col_one = sheet.col_values(1)
+        max_row = len(col_one)
         members = {}
         for i in range(1, max_row):
             member_row = all_values[i]
