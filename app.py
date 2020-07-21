@@ -634,9 +634,9 @@ def reply():
     number_no_1 = number[1:]
     from modules import SkipHandler
     member = Member.query.get(assign.member_id)
+    tid = assign.task_id
+    task = CleanupHour.query.get(tid)
     if 'confirm' in body.lower():
-        tid = assign.task_id
-        task = CleanupHour.query.get(tid)
         assign.response = 'Confirm'
         resp.message("Thank you for your confirmation. Submit your completed hour at "
                      "cleanup-coordinator.herokuapp.com/submit")
@@ -649,6 +649,7 @@ def reply():
             assign.response = 'Confirm'
             db.session.add(assign)
             db.session.commit()
+            schedule_reminder(member, task)
             return str(resp)
         try:
             SkipHandler.reassign(number, number_no_1)
@@ -661,6 +662,7 @@ def reply():
             resp.message("Your task could not be skipped because everyone else in the queue has all their hours." +
                          " You have been auto-confirmed.")
             assign.response = "Confirm"
+            schedule_reminder(member, task)
     else:
         resp.message("The message you sent was not a valid option. Please try again")
     db.session.add(assign)
